@@ -1,0 +1,6 @@
+{
+  "name": "LeanBloom Master Admin",
+  "description": "Master administration and multi-tenant management platform for LeanBloom healthcare and telehealth affiliates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
