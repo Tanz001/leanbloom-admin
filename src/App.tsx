@@ -9,10 +9,8 @@ import {
   AffiliatePriceRule,
   CommissionRecord,
   PaymentTransaction,
-  Provider,
   NotificationItem,
   AdminUser,
-  AuditLog,
   DomainItem,
   AffiliateRoute,
   AffiliateProfile,
@@ -30,10 +28,8 @@ import {
   INITIAL_PRICING_RULES,
   INITIAL_COMMISSIONS,
   INITIAL_PAYMENTS,
-  INITIAL_PROVIDERS,
   INITIAL_NOTIFICATIONS,
   INITIAL_USERS,
-  INITIAL_AUDIT_LOGS,
   INITIAL_DOMAINS
 } from './mockData';
 import {
@@ -56,7 +52,6 @@ import { PatientsView } from './components/views/PatientsView';
 import { OrdersView } from './components/views/OrdersView';
 import { ProductsPricingView } from './components/views/ProductsPricingView';
 import { CommissionsPaymentsView } from './components/views/CommissionsPaymentsView';
-import { OperationsView } from './components/views/OperationsView';
 import { ReportsView } from './components/views/ReportsView';
 import { SystemView } from './components/views/SystemView';
 
@@ -95,7 +90,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   // Navigation & Auth State
-  // Default to authenticated as Affiliate A (Wellness Partner LLC) so the Affiliate Dashboard opens immediately
+  // Default to Admin so the cleaned master console opens immediately
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<{
     name: string;
@@ -103,10 +98,9 @@ export default function App() {
     role: string;
     affiliateId?: string;
   }>({
-    name: 'Wellness Partner LLC',
-    email: 'contact@wellnesspartner.com',
-    role: 'Affiliate',
-    affiliateId: 'affiliate_001'
+    name: 'John Admin',
+    email: 'john.admin@leanbloom.com',
+    role: 'Admin'
   });
 
   // Current view for Master Admin or Auth
@@ -193,10 +187,8 @@ export default function App() {
   const [pricingRules] = useState<AffiliatePriceRule[]>(INITIAL_PRICING_RULES);
   const [commissions] = useState<CommissionRecord[]>(INITIAL_COMMISSIONS);
   const [payments, setPayments] = useState<PaymentTransaction[]>(INITIAL_PAYMENTS);
-  const [providers] = useState<Provider[]>(INITIAL_PROVIDERS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>(INITIAL_USERS);
-  const [auditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [domains, setDomains] = useState<DomainItem[]>(INITIAL_DOMAINS);
   const [brandingSelectedAffiliateId, setBrandingSelectedAffiliateId] = useState<
     string | undefined
@@ -256,31 +248,17 @@ export default function App() {
     setCurrentView('signin');
   };
 
-  // Switch active tenant in Affiliate Portal
-  const handleSwitchTenant = (affId: string) => {
-    setActiveAffiliateId(affId);
-    const prof = affiliateProfiles[affId];
-    if (prof) {
-      setCurrentUser({
-        name: prof.name,
-        email: prof.email,
-        role: 'Affiliate',
-        affiliateId: affId
-      });
-    }
-  };
-
-  // Switch to Master Admin Console
+  // Switch to Admin Console
   const handleSwitchToMasterAdmin = () => {
     setCurrentUser({
       name: 'John Admin',
       email: 'john.admin@leanbloom.com',
-      role: 'Master Admin'
+      role: 'Admin'
     });
     setCurrentView('dashboard');
   };
 
-  // Switch from Master Admin into Affiliate Portal (Login as Affiliate)
+  // Switch from Admin into Affiliate Portal (Login as Affiliate)
   const handleConfirmLoginAsAffiliate = (targetAff: Affiliate) => {
     setLoginAsAffiliateTarget(null);
     const mappedAffId =
@@ -512,7 +490,6 @@ export default function App() {
           affiliateName: currentAffiliateProfile.name
         }}
         onLogout={handleLogout}
-        onSwitchTenant={handleSwitchTenant}
         onSwitchToMasterAdmin={handleSwitchToMasterAdmin}
         onOpenSearch={() => setIsGlobalSearchModalOpen(true)}
       >
@@ -652,41 +629,10 @@ export default function App() {
     );
   }
 
-  // 3. Authenticated as Master Admin: Render Master Admin Console
+  // 3. Authenticated as Admin: Render Admin Console
   return (
-    <div className="min-h-screen bg-[#F7F9FC] text-[#172033] flex flex-col font-sans">
-      {/* Top Bar with Fast Switch to Affiliate Portal */}
-      <div className="bg-[#174A87] text-white px-4 py-1.5 text-[11px] font-medium flex items-center justify-between z-30 shadow-xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
-          <span>
-            LeanBloom Enterprise <strong>Master Admin Console</strong> ({currentUser.name})
-          </span>
-          <span className="hidden md:inline text-blue-200">
-            • Platform-wide monitoring of all healthcare affiliates & prescribers
-          </span>
-        </div>
-
-        <button
-          onClick={() => {
-            setCurrentUser({
-              name: 'Wellness Partner LLC',
-              email: 'contact@wellnesspartner.com',
-              role: 'Affiliate',
-              affiliateId: 'affiliate_001'
-            });
-            setActiveAffiliateId('affiliate_001');
-            setCurrentAffiliateRoute('dashboard');
-          }}
-          className="px-2.5 py-0.5 bg-white/20 hover:bg-white/30 rounded-md text-[11px] font-bold text-white transition-colors flex items-center gap-1.5"
-        >
-          <span>Open Affiliate Portal View</span>
-          <ArrowLeft className="w-3 h-3 rotate-180" />
-        </button>
-      </div>
-
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
+    <div className="h-screen overflow-hidden bg-[#F7F9FC] text-[#172033] flex flex-col font-sans">
+      <div className="lg:pl-0 flex-1 flex min-h-0 overflow-hidden">
         <Sidebar
           currentView={currentView}
           onNavigate={handleNavigate}
@@ -695,10 +641,40 @@ export default function App() {
           mobileOpen={mobileSidebarOpen}
           onCloseMobile={() => setMobileSidebarOpen(false)}
           unreadNotificationsCount={notifications.filter((n) => !n.read).length}
+          affiliateCount={affiliates.length}
         />
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* Header */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          <div className="bg-[#12345F] text-white px-4 py-1.5 text-[11px] font-medium flex items-center justify-between z-30 flex-shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4FAF4A] flex-shrink-0" />
+              <span className="truncate">
+                LeanBloom <strong>Admin</strong> · {currentUser.name}
+              </span>
+              <span className="hidden md:inline text-slate-300 truncate">
+                · Affiliates, branding, products & sales
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentUser({
+                  name: 'Wellness Partner LLC',
+                  email: 'contact@wellnesspartner.com',
+                  role: 'Affiliate',
+                  affiliateId: 'affiliate_001'
+                });
+                setActiveAffiliateId('affiliate_001');
+                setCurrentAffiliateRoute('dashboard');
+              }}
+              className="px-2.5 py-0.5 bg-white/10 hover:bg-white/20 rounded-md text-[11px] font-semibold text-white transition-colors flex items-center gap-1.5 flex-shrink-0"
+            >
+              <span>Preview Affiliate Portal</span>
+              <ArrowLeft className="w-3 h-3 rotate-180" />
+            </button>
+          </div>
+
           <Header
             currentView={currentView}
             dateRange={dateRange}
@@ -712,8 +688,8 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          {/* Main Content View */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl w-full mx-auto">
             {/* 1. DASHBOARD VIEW */}
             {currentView === 'dashboard' && (
               <DashboardView
@@ -822,37 +798,24 @@ export default function App() {
               />
             )}
 
-            {/* 7. OPERATIONS VIEWS */}
-            {(currentView === 'providers' ||
-              currentView === 'pharmacy' ||
-              currentView === 'appointments' ||
-              currentView === 'prescriptions' ||
-              currentView === 'support') && (
-              <OperationsView initialSection={currentView} providers={providers} />
-            )}
-
-            {/* 8. REPORTS & ANALYTICS VIEWS */}
-            {(currentView === 'reports' ||
-              currentView === 'sales-analytics' ||
-              currentView === 'affiliate-performance' ||
-              currentView === 'revenue-analytics') && (
+            {/* 7. REPORTS */}
+            {currentView === 'reports' && (
               <ReportsView affiliates={affiliates} products={products} />
             )}
 
-            {/* 9. SYSTEM, NOTIFICATIONS, USERS & ROLES, AUDIT LOGS, SETTINGS */}
+            {/* 8. SYSTEM */}
             {(currentView === 'settings' ||
               currentView === 'notifications' ||
-              currentView === 'users-roles' ||
-              currentView === 'audit-logs') && (
+              currentView === 'users-roles') && (
               <SystemView
-                initialSub={currentView as any}
+                initialSub={currentView as 'notifications' | 'users-roles' | 'settings'}
                 notifications={notifications}
                 users={adminUsers}
-                auditLogs={auditLogs}
                 onMarkNotificationRead={handleMarkNotificationRead}
                 onAddUser={handleAddAdminUser}
               />
             )}
+            </div>
           </main>
         </div>
       </div>

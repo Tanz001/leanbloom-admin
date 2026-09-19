@@ -38,7 +38,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ affiliates, products }
   const reportTypes = [
     'Revenue Report',
     'Affiliate Sales Report',
-    'Patient Growth Report',
+    'Customer Growth Report',
     'Orders Report',
     'Commission Report',
     'Payment Report',
@@ -69,10 +69,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ affiliates, products }
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
         <div>
           <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            Financial & Operational Reports
+            Reports & Sales
           </h2>
           <p className="text-xs text-[#667085] mt-0.5">
-            Generate compliant accounting statements, patient velocity audits, and child tenant metrics.
+            Export affiliate sales, orders, and commission summaries.
           </p>
         </div>
       </div>

@@ -48,7 +48,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-[#172033] tracking-tight">Master Orders Stream</h2>
           <p className="text-xs text-[#667085] mt-0.5">
-            Real-time fulfillment, telehealth prescriptions, and billing transactions.
+            Real-time order status across affiliate storefronts.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">

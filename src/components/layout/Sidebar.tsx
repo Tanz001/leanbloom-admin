@@ -8,23 +8,13 @@ import {
   DollarSign,
   Percent,
   CreditCard,
-  UserCheck,
-  Truck,
-  Calendar,
-  FileText,
-  HelpCircle,
   BarChart3,
-  TrendingUp,
-  LineChart,
-  PieChart,
   Bell,
   ShieldCheck,
-  History,
   Settings,
   ChevronLeft,
   ChevronRight,
   X,
-  Sparkles,
   Globe,
   Palette
 } from 'lucide-react';
@@ -39,6 +29,7 @@ interface SidebarProps {
   mobileOpen: boolean;
   onCloseMobile: () => void;
   unreadNotificationsCount: number;
+  affiliateCount?: number;
 }
 
 interface NavItem {
@@ -60,7 +51,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   mobileOpen,
   onCloseMobile,
-  unreadNotificationsCount
+  unreadNotificationsCount,
+  affiliateCount = 0
 }) => {
   const sections: NavSection[] = [
     {
@@ -74,28 +66,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      title: 'PLATFORM',
+      title: 'AFFILIATES',
       items: [
         {
           id: 'affiliates',
           label: 'Affiliates',
           icon: <Building2 className="w-4 h-4 flex-shrink-0" />,
-          badge: '7'
+          badge: affiliateCount || undefined
         },
         {
           id: 'domains',
-          label: 'Domains & DNS',
-          icon: <Globe className="w-4 h-4 flex-shrink-0" />,
-          badge: '8'
+          label: 'Domains',
+          icon: <Globe className="w-4 h-4 flex-shrink-0" />
         },
         {
           id: 'branding',
-          label: 'White-Label & Branding',
+          label: 'Branding',
           icon: <Palette className="w-4 h-4 flex-shrink-0" />
-        },
+        }
+      ]
+    },
+    {
+      title: 'COMMERCE',
+      items: [
         {
           id: 'patients',
-          label: 'Patients',
+          label: 'Customers',
           icon: <Users className="w-4 h-4 flex-shrink-0" />
         },
         {
@@ -126,57 +122,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      title: 'OPERATIONS',
-      items: [
-        {
-          id: 'providers',
-          label: 'Providers',
-          icon: <UserCheck className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'pharmacy',
-          label: 'Pharmacy / Fulfillment',
-          icon: <Truck className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'appointments',
-          label: 'Appointments',
-          icon: <Calendar className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'prescriptions',
-          label: 'Prescriptions',
-          icon: <FileText className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'support',
-          label: 'Support',
-          icon: <HelpCircle className="w-4 h-4 flex-shrink-0" />
-        }
-      ]
-    },
-    {
-      title: 'ANALYTICS',
+      title: 'INSIGHTS',
       items: [
         {
           id: 'reports',
-          label: 'Reports',
+          label: 'Reports & Sales',
           icon: <BarChart3 className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'sales-analytics',
-          label: 'Sales Analytics',
-          icon: <TrendingUp className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'affiliate-performance',
-          label: 'Affiliate Performance',
-          icon: <PieChart className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'revenue-analytics',
-          label: 'Revenue Analytics',
-          icon: <LineChart className="w-4 h-4 flex-shrink-0" />
         }
       ]
     },
@@ -191,13 +142,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'users-roles',
-          label: 'Users & Roles',
+          label: 'Admin Users',
           icon: <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-        },
-        {
-          id: 'audit-logs',
-          label: 'Audit Logs',
-          icon: <History className="w-4 h-4 flex-shrink-0" />
         },
         {
           id: 'settings',
@@ -210,27 +156,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleNavClick = (viewId: PageView) => {
     onNavigate(viewId);
-    if (mobileOpen) {
-      onCloseMobile();
-    }
+    if (mobileOpen) onCloseMobile();
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#12345F] text-white">
-      {/* Brand Header */}
-      <div className="h-18 px-4 flex items-center justify-between border-b border-white/10 flex-shrink-0">
+    <div className="flex flex-col h-full bg-white text-[#172033]">
+      {/* Brand */}
+      <div className="h-16 px-4 flex items-center justify-between border-b border-[#E4E7EC] flex-shrink-0">
         <LeanBloomLogo
           collapsed={collapsed}
           size="md"
-          theme="dark"
+          theme="light"
           showSubtitle={!collapsed}
+          subtitle="Admin"
         />
-        {/* Mobile close or desktop collapse */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-0.5">
           <button
             type="button"
             onClick={onCloseMobile}
-            className="lg:hidden p-1.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/10"
+            className="lg:hidden p-1.5 text-[#667085] hover:text-[#173B72] rounded-lg hover:bg-[#F2F4F7]"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -239,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             id="sidebar-collapse-toggle-btn"
             onClick={onToggleCollapse}
-            className="hidden lg:flex p-1.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className="hidden lg:flex p-1.5 text-[#667085] hover:text-[#173B72] rounded-lg hover:bg-[#F2F4F7] transition-colors"
             title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
@@ -248,12 +192,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto py-3 px-2.5 space-y-4">
+      {/* Nav — scrolls independently if needed */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2.5 space-y-5">
         {sections.map((section) => (
-          <div key={section.title} className="space-y-1">
+          <div key={section.title}>
             {!collapsed && (
-              <h2 className="px-2.5 text-[10px] font-bold tracking-wider text-[#3A91D8] uppercase select-none">
+              <h2 className="px-2.5 mb-1.5 text-[10px] font-semibold tracking-[0.08em] text-[#98A2B3] uppercase select-none">
                 {section.title}
               </h2>
             )}
@@ -270,44 +214,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     id={`nav-${item.id}`}
                     onClick={() => handleNavClick(item.id)}
                     title={collapsed ? item.label : undefined}
-                    className={`w-full group relative flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium rounded-lg transition-all ${
+                    className={`w-full group relative flex items-center gap-2.5 px-2.5 py-2 text-[13px] font-medium rounded-lg transition-all ${
                       isActive
-                        ? 'bg-[#173B72] text-white shadow-xs ring-1 ring-[#2D82C4]/40 font-semibold'
-                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                        ? 'bg-[#EAF4FB] text-[#173B72] font-semibold'
+                        : 'text-[#475467] hover:text-[#173B72] hover:bg-[#F7F9FC]'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
-                    {/* Active small green indicator dot */}
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#4FAF4A] rounded-r-full" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#4FAF4A] rounded-r-full" />
                     )}
 
-                    <span
-                      className={`${
-                        isActive ? 'text-[#3A91D8]' : 'text-slate-400 group-hover:text-slate-200'
-                      }`}
-                    >
+                    <span className={isActive ? 'text-[#2D82C4]' : 'text-[#98A2B3] group-hover:text-[#2D82C4]'}>
                       {item.icon}
                     </span>
 
-                    {!collapsed && (
-                      <span className="truncate flex-1 text-left">{item.label}</span>
-                    )}
+                    {!collapsed && <span className="truncate flex-1 text-left">{item.label}</span>}
 
                     {!collapsed && item.badge !== undefined && (
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                          typeof item.badge === 'number'
+                        className={`text-[10px] font-semibold min-w-[1.25rem] text-center px-1.5 py-0.5 rounded-md ${
+                          typeof item.badge === 'number' && item.id === 'notifications'
                             ? 'bg-[#4FAF4A] text-white'
-                            : 'bg-white/15 text-slate-300'
+                            : 'bg-[#F2F4F7] text-[#667085]'
                         }`}
                       >
                         {item.badge}
                       </span>
                     )}
 
-                    {/* Collapsed Tooltip */}
                     {collapsed && (
-                      <div className="fixed left-20 ml-2 hidden group-hover:block bg-[#172033] text-white text-xs font-medium px-2.5 py-1.5 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">
+                      <div className="fixed left-[4.5rem] ml-2 hidden group-hover:block bg-[#173B72] text-white text-xs font-medium px-2.5 py-1.5 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">
                         {item.label}
                       </div>
                     )}
@@ -317,43 +253,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
         ))}
-      </div>
+      </nav>
 
-      {/* Tenant / White-Label Architecture Banner */}
       {!collapsed && (
-        <div className="mx-2.5 my-2 p-2.5 rounded-xl bg-gradient-to-r from-[#173B72] to-[#12345F] border border-[#2D82C4]/30 text-[11px]">
-          <div className="flex items-center gap-1.5 text-[#3A91D8] font-bold mb-1">
-            <Sparkles className="w-3.5 h-3.5 text-[#4FAF4A]" />
-            Multi-Tenant Hub
-          </div>
-          <p className="text-slate-300 text-[10px] leading-relaxed">
-            Controlling <strong className="text-white">7 active affiliates</strong> across 50 US states.
+        <div className="mx-2.5 mb-2 px-3 py-2.5 rounded-lg bg-gradient-to-br from-[#EAF4FB] to-[#F0FDF4] border border-[#E4E7EC]">
+          <p className="text-[11px] font-semibold text-[#173B72]">Affiliate platform</p>
+          <p className="text-[10px] text-[#667085] mt-0.5 leading-relaxed">
+            Partners, branding & sales in one place.
           </p>
         </div>
       )}
 
-      {/* Admin Profile Footer */}
-      <div className="p-3 border-t border-white/10 flex-shrink-0 bg-[#0E2849]">
-        <div
-          className={`flex items-center gap-2.5 ${
-            collapsed ? 'justify-center' : 'justify-between'
-          }`}
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2D82C4] to-[#173B72] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 ring-1 ring-[#4FAF4A]/50">
-              JA
-            </div>
-            {!collapsed && (
-              <div className="truncate text-left">
-                <p className="text-xs font-semibold text-white leading-tight truncate">
-                  John Admin
-                </p>
-                <p className="text-[10px] text-[#3A91D8] font-medium leading-tight truncate">
-                  Master Administrator
-                </p>
-              </div>
-            )}
+      <div className="p-3 border-t border-[#E4E7EC] flex-shrink-0 bg-[#F9FAFB]">
+        <div className={`flex items-center gap-2.5 ${collapsed ? 'justify-center' : ''}`}>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#12345F] to-[#2D82C4] text-white font-semibold text-xs flex items-center justify-center flex-shrink-0">
+            JA
           </div>
+          {!collapsed && (
+            <div className="truncate text-left">
+              <p className="text-xs font-semibold text-[#172033] leading-tight truncate">John Admin</p>
+              <p className="text-[10px] text-[#2D82C4] font-medium leading-tight truncate">Admin</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -361,26 +282,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Fixed desktop sidebar — never scrolls with page */}
       <aside
         id="master-sidebar-desktop"
-        className={`hidden lg:flex flex-col border-r border-[#12345F]/20 flex-shrink-0 transition-all duration-200 z-20 ${
-          collapsed ? 'w-20' : 'w-64 xl:w-68'
+        className={`hidden lg:flex flex-col fixed top-0 left-0 h-screen border-r border-[#E4E7EC] bg-white z-40 transition-all duration-200 ${
+          collapsed ? 'w-20' : 'w-60'
         }`}
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Spacer so main content doesn't sit under fixed sidebar */}
+      <div
+        className={`hidden lg:block flex-shrink-0 transition-all duration-200 ${
+          collapsed ? 'w-20' : 'w-60'
+        }`}
+        aria-hidden
+      />
+
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
             onClick={onCloseMobile}
           />
-          {/* Drawer panel */}
-          <div className="relative flex flex-col w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+          <div className="relative flex flex-col w-72 max-w-[85vw] h-full shadow-2xl z-10 bg-white animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </div>
         </div>

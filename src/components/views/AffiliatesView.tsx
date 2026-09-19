@@ -56,7 +56,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Pending' | 'Inactive' | 'Suspended'>('All');
   const [detailTab, setDetailTab] = useState<
-    'Overview' | 'Patients' | 'Orders' | 'Products' | 'Commissions' | 'Branding' | 'Settings'
+    'Overview' | 'Customers' | 'Orders' | 'Products' | 'Commissions' | 'Branding' | 'Settings'
   >('Overview');
 
   // Filter affiliates
@@ -141,7 +141,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
         {/* Tab Navigation */}
         <div className="flex border-b border-[#E4E7EC] bg-white px-4 rounded-xl shadow-xs overflow-x-auto gap-2">
           {(
-            ['Overview', 'Patients', 'Orders', 'Products', 'Commissions', 'Branding', 'Settings'] as const
+            ['Overview', 'Customers', 'Orders', 'Products', 'Commissions', 'Branding', 'Settings'] as const
           ).map((tab) => (
             <button
               key={tab}
@@ -164,7 +164,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
             {/* Overview KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
               <StatCard
-                label="Total Patients"
+                label="Total Customers"
                 value={selectedAffiliate.patientsCount.toLocaleString()}
                 change="+14.2%"
                 icon={<Users className="w-4 h-4" />}
@@ -241,28 +241,36 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 </div>
               </div>
 
-              {/* Prescriber & Operations info */}
+              {/* Storefront & payout summary */}
               <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 space-y-4">
                 <h3 className="text-sm font-bold text-[#172033] border-b border-[#F2F4F7] pb-2 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#4FAF4A]" />
-                  Operations & Clinical Routing
+                  Sales & Payouts
                 </h3>
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between py-1 border-b border-[#F2F4F7]">
-                    <span className="text-[#667085]">Clinical Prescriber Director:</span>
-                    <span className="font-semibold text-[#172033]">Dr. Marcus Vance (NPI #1982736450)</span>
+                    <span className="text-[#667085]">Lifetime (MTD):</span>
+                    <span className="font-semibold text-[#172033] font-mono">
+                      ${selectedAffiliate.revenue.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#F2F4F7]">
-                    <span className="text-[#667085]">Pharmacy Fulfillment Hub:</span>
-                    <span className="text-[#344054]">Precision Compounding 503A / Tailor Made</span>
+                    <span className="text-[#667085]">Commission earned:</span>
+                    <span className="font-mono font-semibold text-[#2E9B4B]">
+                      ${selectedAffiliate.commission.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#F2F4F7]">
-                    <span className="text-[#667085]">Stripe Connect Account:</span>
-                    <span className="text-[#2E9B4B] font-mono font-semibold">acct_1NZ0x9812499 (Connected)</span>
+                    <span className="text-[#667085]">Orders:</span>
+                    <span className="font-semibold text-[#172033]">
+                      {selectedAffiliate.ordersCount.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between py-1">
-                    <span className="text-[#667085]">HIPAA BAA Executed:</span>
-                    <span className="text-[#173B72] font-semibold">Yes — Signed on onboarding</span>
+                    <span className="text-[#667085]">Medical fulfillment:</span>
+                    <span className="text-[#344054] text-right max-w-[14rem]">
+                      Handled by LeanBloom / MyDose (shared)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -270,17 +278,17 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
           </div>
         )}
 
-        {/* Tab 2: Patients in this affiliate */}
-        {detailTab === 'Patients' && (
+        {/* Tab 2: Customers in this affiliate */}
+        {detailTab === 'Customers' && (
           <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 shadow-xs">
             <h3 className="text-sm font-bold text-[#172033] mb-3">
-              Patients enrolled under {selectedAffiliate.name} ({affiliatePatients.length})
+              Customers under {selectedAffiliate.name} ({affiliatePatients.length})
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-[#F8F9FC] text-[11px] font-bold text-[#667085] uppercase">
-                    <th className="py-2.5 px-3">Patient Name</th>
+                    <th className="py-2.5 px-3">Customer Name</th>
                     <th className="py-2.5 px-3">Email</th>
                     <th className="py-2.5 px-3">Program</th>
                     <th className="py-2.5 px-3 text-right">Orders</th>
@@ -302,7 +310,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                   {affiliatePatients.length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-6 text-center text-[#667085]">
-                        No patients enrolled yet under this affiliate.
+                        No customers yet under this affiliate.
                       </td>
                     </tr>
                   )}
@@ -659,7 +667,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 <th className="py-3 px-4">Business Name & Logo</th>
                 <th className="py-3 px-4">Contact Person</th>
                 <th className="py-3 px-4">Domain / URL</th>
-                <th className="py-3 px-4 text-right">Patients</th>
+                <th className="py-3 px-4 text-right">Customers</th>
                 <th className="py-3 px-4 text-right">Orders</th>
                 <th className="py-3 px-4 text-right">Revenue</th>
                 <th className="py-3 px-4">Status</th>

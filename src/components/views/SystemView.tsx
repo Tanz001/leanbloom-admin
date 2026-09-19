@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import {
   Bell,
   ShieldCheck,
-  History,
   Settings,
-  User,
   Plus,
   Lock,
   Globe,
@@ -16,14 +14,13 @@ import {
   Shield,
   Palette
 } from 'lucide-react';
-import { NotificationItem, AdminUser, AuditLog } from '../../types';
+import { NotificationItem, AdminUser } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
 
 interface SystemViewProps {
-  initialSub?: 'notifications' | 'users-roles' | 'audit-logs' | 'settings';
+  initialSub?: 'notifications' | 'users-roles' | 'settings';
   notifications: NotificationItem[];
   users: AdminUser[];
-  auditLogs: AuditLog[];
   onMarkNotificationRead: (id: string) => void;
   onAddUser: (user: Omit<AdminUser, 'id' | 'createdAt' | 'lastLogin'>) => void;
 }
@@ -32,11 +29,10 @@ export const SystemView: React.FC<SystemViewProps> = ({
   initialSub = 'settings',
   notifications,
   users,
-  auditLogs,
   onMarkNotificationRead,
   onAddUser
 }) => {
-  const [activeTab, setActiveTab] = useState<'notifications' | 'users-roles' | 'audit-logs' | 'settings'>(
+  const [activeTab, setActiveTab] = useState<'notifications' | 'users-roles' | 'settings'>(
     initialSub
   );
 
@@ -44,7 +40,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState<AdminUser['role']>('Operations Admin');
+  const [newUserRole, setNewUserRole] = useState<AdminUser['role']>('Admin');
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,12 +58,11 @@ export const SystemView: React.FC<SystemViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="system-view-container">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
         <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">System & Platform Governance</h2>
+          <h2 className="text-xl font-bold text-[#172033] tracking-tight">System</h2>
           <p className="text-xs text-[#667085] mt-0.5">
-            Manage administrative permissions, immutable HIPAA audit logs, notification feeds, and root settings.
+            Admin users, notifications, and platform settings.
           </p>
         </div>
 
@@ -75,8 +70,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
           {(
             [
               { id: 'notifications', label: 'Notifications' },
-              { id: 'users-roles', label: 'Users & Roles' },
-              { id: 'audit-logs', label: 'Audit Logs' },
+              { id: 'users-roles', label: 'Admin Users' },
               { id: 'settings', label: 'Platform Settings' }
             ] as const
           ).map((item) => (
@@ -162,10 +156,10 @@ export const SystemView: React.FC<SystemViewProps> = ({
             <div>
               <h3 className="text-base font-bold text-[#172033] flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#173B72]" />
-                Master Administrative Team (RBAC)
+                Admin Users
               </h3>
               <p className="text-xs text-[#667085]">
-                Roles: Master Admin, Master Staff, Finance Admin, Operations Admin, Support Admin
+                Platform access is limited to Admin and Affiliate roles. Only Admins appear here.
               </p>
             </div>
             <button
@@ -174,7 +168,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
               className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
-              Invite Team Member
+              Invite Admin
             </button>
           </div>
 
@@ -222,7 +216,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
           {showAddUserModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
               <div className="bg-white rounded-xl p-5 w-full max-w-sm border border-[#E4E7EC] shadow-2xl space-y-4">
-                <h4 className="text-sm font-bold text-[#172033]">Invite Master Team Member</h4>
+                <h4 className="text-sm font-bold text-[#172033]">Invite Admin</h4>
                 <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
                   <div>
                     <label className="block text-xs font-semibold text-[#344054] mb-1">Full Name</label>
@@ -232,7 +226,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
                       value={newUserName}
                       onChange={(e) => setNewUserName(e.target.value)}
                       placeholder="e.g. Rachel Adams"
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D82C4]/30"
                     />
                   </div>
                   <div>
@@ -243,22 +237,20 @@ export const SystemView: React.FC<SystemViewProps> = ({
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
                       placeholder="rachel@leanbloom.com"
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D82C4]/30"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#344054] mb-1">Role</label>
                     <select
                       value={newUserRole}
-                      onChange={(e) => setNewUserRole(e.target.value as any)}
-                      className="w-full px-3 py-2 border rounded-lg bg-white"
+                      onChange={(e) => setNewUserRole(e.target.value as AdminUser['role'])}
+                      className="w-full px-3 py-2 border rounded-lg bg-[#F8F9FC] text-[#667085]"
+                      disabled
                     >
-                      <option value="Master Admin">Master Admin</option>
-                      <option value="Master Staff">Master Staff</option>
-                      <option value="Finance Admin">Finance Admin</option>
-                      <option value="Operations Admin">Operations Admin</option>
-                      <option value="Support Admin">Support Admin</option>
+                      <option value="Admin">Admin</option>
                     </select>
+                    <p className="text-[10px] text-[#667085] mt-1">Affiliates are managed from the Affiliates page.</p>
                   </div>
                   <div className="pt-2 flex justify-end gap-2">
                     <button
@@ -282,67 +274,7 @@ export const SystemView: React.FC<SystemViewProps> = ({
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. AUDIT LOGS (Prompt #24)
-         ───────────────────────────────────────────────────────────── */}
-      {activeTab === 'audit-logs' && (
-        <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F2F4F7]">
-            <div>
-              <h3 className="text-base font-bold text-[#172033] flex items-center gap-2">
-                <History className="w-4 h-4 text-[#173B72]" />
-                Immutable Master Audit Trail
-              </h3>
-              <p className="text-xs text-[#667085]">
-                Tracks pricing floor modifications, affiliate status changes, disbursements, and logins.
-              </p>
-            </div>
-            <span className="text-xs font-mono text-[#2E9B4B] bg-[#EAF6E7] px-2.5 py-1 rounded">
-              HIPAA Audit Logging Active
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#F8F9FC] text-[11px] font-bold text-[#667085] uppercase">
-                  <th className="py-2.5 px-3">Timestamp</th>
-                  <th className="py-2.5 px-3">Admin</th>
-                  <th className="py-2.5 px-3">Category</th>
-                  <th className="py-2.5 px-3">Administrative Action</th>
-                  <th className="py-2.5 px-3">Target Entity</th>
-                  <th className="py-2.5 px-3">Value Mutation</th>
-                  <th className="py-2.5 px-3">IP Origin</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F2F4F7]">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-[#F8F9FC]">
-                    <td className="py-3 px-3 text-[#667085] whitespace-nowrap">{log.timestamp}</td>
-                    <td className="py-3 px-3 font-semibold text-[#172033]">{log.adminName}</td>
-                    <td className="py-3 px-3">
-                      <span className="bg-[#F2F4F7] text-[#344054] px-2 py-0.5 rounded font-mono text-[11px]">
-                        {log.category}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-medium text-[#173B72]">{log.action}</td>
-                    <td className="py-3 px-3 text-[#344054]">{log.target}</td>
-                    <td className="py-3 px-3 font-mono text-[11px]">
-                      {log.oldValue && <span className="line-through text-[#D64545] mr-1.5">{log.oldValue}</span>}
-                      {log.newValue && <span className="text-[#2E9B4B] font-bold">{log.newValue}</span>}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[#98A2B3]">{log.ipAddress}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. SETTINGS (Prompt #26)
-         ───────────────────────────────────────────────────────────── */}
+      {/* SETTINGS */}
       {activeTab === 'settings' && (
         <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 shadow-xs space-y-5">
           <div className="flex border-b border-[#E4E7EC] gap-4">

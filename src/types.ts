@@ -10,18 +10,9 @@ export type PageView =
   | 'pricing'
   | 'commissions'
   | 'payments'
-  | 'providers'
-  | 'pharmacy'
-  | 'appointments'
-  | 'prescriptions'
-  | 'support'
   | 'reports'
-  | 'sales-analytics'
-  | 'affiliate-performance'
-  | 'revenue-analytics'
   | 'notifications'
   | 'users-roles'
-  | 'audit-logs'
   | 'settings'
   | 'signin'
   | 'signup';
@@ -198,23 +189,11 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: 'Master Admin' | 'Master Staff' | 'Finance Admin' | 'Operations Admin' | 'Support Admin';
+  role: 'Admin';
   status: 'Active' | 'Invited' | 'Suspended';
   lastLogin: string;
   createdAt: string;
   avatarUrl?: string;
-}
-
-export interface Provider {
-  id: string;
-  name: string;
-  specialty: string;
-  npi: string;
-  licenseStates: string[];
-  activePatients: number;
-  consultsCompleted: number;
-  status: 'Active' | 'Pending Verification' | 'On Leave';
-  rating: number;
 }
 
 // ==========================================

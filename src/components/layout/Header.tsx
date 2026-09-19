@@ -61,110 +61,74 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   // Title and subtitle mapping
-  const titles: Record<PageView, { title: string; subtitle: string }> = {
+  const titles: Partial<Record<PageView, { title: string; subtitle: string }>> = {
     dashboard: {
       title: 'Dashboard',
-      subtitle: "Here's what's happening across your LeanBloom platform today."
+      subtitle: 'Overview of affiliates, orders, and platform sales.'
     },
     affiliates: {
       title: 'Affiliates',
-      subtitle: 'Manage all businesses operating on the LeanBloom platform.'
+      subtitle: 'Create, activate, and manage partner accounts.'
     },
     'affiliate-detail': {
       title: 'Affiliate Detail',
-      subtitle: 'Deep-dive operational metrics, revenue, orders and tenant settings.'
+      subtitle: 'Branding, customers, orders, and sales for this partner.'
     },
     domains: {
-      title: 'Custom Domains & DNS',
-      subtitle: 'Manage multi-tenant SSL edge certificates, custom hostnames, and Anycast routing.'
+      title: 'Domains',
+      subtitle: 'Subdomains and custom domains for affiliate storefronts.'
     },
     branding: {
-      title: 'White-Label & Branding Studio',
-      subtitle: 'Customize tenant logos, visual themes, patient storefronts, and portal styles in real-time.'
+      title: 'White-Label Branding',
+      subtitle: 'Logo, colors, and storefront identity per affiliate.'
     },
     patients: {
-      title: 'Patients',
-      subtitle: 'Master cross-tenant patient directory and clinical intakes.'
+      title: 'Customers',
+      subtitle: 'Customers across all affiliate storefronts.'
     },
     orders: {
       title: 'Orders',
-      subtitle: 'Track pharmacy fulfillment, telehealth consults, and transactions.'
+      subtitle: 'Orders attributed to each affiliate.'
     },
     products: {
       title: 'Products',
-      subtitle: 'Wholesale catalog, minimum price floors, and compounding formulations.'
+      subtitle: 'LeanBloom catalog available to affiliates.'
     },
     pricing: {
-      title: 'Pricing Management',
-      subtitle: 'Strict wholesale base price rules and minimum permitted retail floors.'
+      title: 'Pricing',
+      subtitle: 'Wholesale floors and affiliate markup rules.'
     },
     commissions: {
       title: 'Commissions',
-      subtitle: 'Calculate markups, affiliate payouts, and platform gross margins.'
+      subtitle: 'Affiliate earnings from markup and sales.'
     },
     payments: {
       title: 'Payments',
-      subtitle: 'Direct Stripe Connect, ACH settlements, and customer transaction logs.'
-    },
-    providers: {
-      title: 'Providers & Prescribers',
-      subtitle: 'Supervise licensed clinical prescribers, NPI credentials and multi-state licenses.'
-    },
-    pharmacy: {
-      title: 'Pharmacy & Fulfillment',
-      subtitle: 'Monitor partner 503A/503B compounding queues and shipping logistics.'
-    },
-    appointments: {
-      title: 'Appointments',
-      subtitle: 'Live telehealth synchronous video and asynchronous patient intake charts.'
-    },
-    prescriptions: {
-      title: 'Prescriptions',
-      subtitle: 'Active script titrations, e-prescribing audits, and refills.'
-    },
-    support: {
-      title: 'Platform Support',
-      subtitle: 'Master admin escalation tickets from affiliates and clinical staff.'
+      subtitle: 'Payouts and transaction history.'
     },
     reports: {
-      title: 'Reports & Exports',
-      subtitle: 'Generate audited financial, clinical growth, and affiliate statements.'
-    },
-    'sales-analytics': {
-      title: 'Sales Analytics',
-      subtitle: 'Deep dive into retail gross merchandise value (GMV) and conversions.'
-    },
-    'affiliate-performance': {
-      title: 'Affiliate Performance',
-      subtitle: 'Comparative growth rates, patient retention, and revenue volume.'
-    },
-    'revenue-analytics': {
-      title: 'Revenue Analytics',
-      subtitle: 'LeanBloom net revenue vs. affiliate gross payouts.'
+      title: 'Reports & Sales',
+      subtitle: 'Sales performance across the affiliate network.'
     },
     notifications: {
-      title: 'Notification Center',
-      subtitle: 'System events, clinical inventory alerts, and payout disbursements.'
+      title: 'Notifications',
+      subtitle: 'Platform alerts and important updates.'
     },
     'users-roles': {
-      title: 'Users & Roles',
-      subtitle: 'Role-based access control (RBAC) for master administrators and staff.'
-    },
-    'audit-logs': {
-      title: 'Audit Logs',
-      subtitle: 'Immutable record of master administrative changes and price modifications.'
+      title: 'Admin Users',
+      subtitle: 'Admin accounts with full platform access.'
     },
     settings: {
-      title: 'Platform Settings',
-      subtitle: 'Global white-label branding, domain DNS, API webhooks, and 2FA policies.'
+      title: 'Settings',
+      subtitle: 'Global platform preferences.'
     },
     signin: {
       title: 'Sign In',
-      subtitle: 'LeanBloom Master Admin Portal'
+      subtitle: 'LeanBloom Admin Portal'
     },
     signup: {
       title: 'Sign Up',
-      subtitle: 'Register Master Admin Organization'
+      subtitle: 'Create an account'
     }
   };
 
@@ -204,8 +168,8 @@ export const Header: React.FC<HeaderProps> = ({
               {headerInfo.title}
             </h1>
             {currentView !== 'dashboard' && (
-              <span className="hidden sm:inline-flex text-[11px] font-medium bg-[#EAF4FB] text-[#173B72] px-2 py-0.5 rounded-full border border-[#2D82C4]/20">
-                Master Admin
+              <span className="hidden sm:inline-flex text-[11px] font-medium bg-[#EAF4FB] text-[#173B72] px-2 py-0.5 rounded-md border border-[#2D82C4]/20">
+                Admin
               </span>
             )}
           </div>
@@ -320,7 +284,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="hidden sm:block text-left pr-1">
               <p className="text-xs font-semibold text-[#172033] leading-none">John Admin</p>
-              <p className="text-[10px] text-[#2D82C4] font-medium leading-none mt-0.5">Master Admin</p>
+              <p className="text-[10px] text-[#2D82C4] font-medium leading-none mt-0.5">Admin</p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-[#667085]" />
           </button>
@@ -331,7 +295,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <p className="text-xs font-bold text-[#172033]">John Admin</p>
                 <p className="text-[11px] text-[#667085] truncate">john.admin@leanbloom.com</p>
                 <span className="inline-block mt-1 text-[10px] font-semibold bg-[#EAF6E7] text-[#2E9B4B] px-1.5 py-0.5 rounded">
-                  Super Administrator
+                  Admin
                 </span>
               </div>
 

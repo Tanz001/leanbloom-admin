@@ -43,14 +43,14 @@ export const PatientsView: React.FC<PatientsViewProps> = ({ patients, affiliates
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
         <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">Master Patient Management</h2>
+          <h2 className="text-xl font-bold text-[#172033] tracking-tight">Customers</h2>
           <p className="text-xs text-[#667085] mt-0.5">
-            Cross-tenant patient directory across all white-label clinics & telehealth storefronts.
+            Customers from every affiliate storefront, in one place.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-semibold text-[#173B72] bg-[#EAF4FB] px-3 py-1.5 rounded-lg border border-[#2D82C4]/20 self-start sm:self-auto">
           <UserCheck className="w-4 h-4 text-[#2D82C4]" />
-          <span>24,892 Total Network Patients</span>
+          <span>{patients.length.toLocaleString()} customers loaded</span>
         </div>
       </div>
 

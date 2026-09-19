@@ -51,7 +51,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
         name: formData.clinicName,
         email: formData.email,
         organization: formData.clinicName,
-        role: accountType === 'affiliate' ? 'Affiliate' : 'Master Admin',
+        role: accountType === 'affiliate' ? 'Affiliate' : 'Admin',
         affiliateId: accountType === 'affiliate' ? 'affiliate_001' : undefined
       });
     }, 450);
@@ -102,7 +102,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Master Network Admin</span>
+            <span>Admin</span>
           </button>
         </div>
 

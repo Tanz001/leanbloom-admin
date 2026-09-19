@@ -9,7 +9,6 @@ import {
   AuditLog,
   NotificationItem,
   AdminUser,
-  Provider,
   DomainItem
 } from './types';
 
@@ -716,7 +715,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-502',
-    adminName: 'Sarah MasterStaff',
+    adminName: 'Maya Chen',
     adminEmail: 'sarah.m@leanbloom.com',
     action: 'Approved new affiliate onboarding',
     target: 'HealthPlus Direct (aff-03)',
@@ -737,7 +736,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-504',
-    adminName: 'Finance Admin Alex',
+    adminName: 'David Okonkwo',
     adminEmail: 'alex.k@leanbloom.com',
     action: 'Modified markup model threshold',
     target: 'Tier-1 High Volume Affiliates',
@@ -804,73 +803,28 @@ export const INITIAL_USERS: AdminUser[] = [
     id: 'usr-1',
     name: 'John Admin',
     email: 'john.admin@leanbloom.com',
-    role: 'Master Admin',
+    role: 'Admin',
     status: 'Active',
     lastLogin: 'Just now',
     createdAt: 'Oct 01, 2024'
   },
   {
     id: 'usr-2',
-    name: 'Elena Rostova',
-    email: 'elena.clinical@leanbloom.com',
-    role: 'Operations Admin',
+    name: 'Maya Chen',
+    email: 'maya.chen@leanbloom.com',
+    role: 'Admin',
     status: 'Active',
     lastLogin: '2 hours ago',
     createdAt: 'Jan 15, 2025'
   },
   {
     id: 'usr-3',
-    name: 'Alex Sterling',
-    email: 'alex.finance@leanbloom.com',
-    role: 'Finance Admin',
-    status: 'Active',
-    lastLogin: 'Yesterday',
-    createdAt: 'Mar 10, 2025'
-  },
-  {
-    id: 'usr-4',
-    name: 'Sarah Mitchell',
-    email: 'sarah.staff@leanbloom.com',
-    role: 'Master Staff',
-    status: 'Active',
-    lastLogin: '3 days ago',
-    createdAt: 'Jun 22, 2025'
-  }
-];
-
-export const INITIAL_PROVIDERS: Provider[] = [
-  {
-    id: 'prv-01',
-    name: 'Dr. Evelyn Reed, MD',
-    specialty: 'Endocrinology & Metabolic Health',
-    npi: '1982736450',
-    licenseStates: ['CA', 'TX', 'NY', 'FL', 'IL'],
-    activePatients: 412,
-    consultsCompleted: 1840,
-    status: 'Active',
-    rating: 4.9
-  },
-  {
-    id: 'prv-02',
-    name: 'Dr. Thomas Gallagher, DO',
-    specialty: 'Family Medicine & Anti-Aging',
-    npi: '1209384756',
-    licenseStates: ['CO', 'WA', 'AZ', 'UT', 'NV'],
-    activePatients: 360,
-    consultsCompleted: 1520,
-    status: 'Active',
-    rating: 4.8
-  },
-  {
-    id: 'prv-03',
-    name: 'Maya Lin, FNP-BC',
-    specialty: 'Telehealth Clinical Nurse Specialist',
-    npi: '1548293011',
-    licenseStates: ['TX', 'GA', 'NC', 'TN'],
-    activePatients: 290,
-    consultsCompleted: 1190,
-    status: 'Active',
-    rating: 4.9
+    name: 'David Okonkwo',
+    email: 'david.okonkwo@leanbloom.com',
+    role: 'Admin',
+    status: 'Invited',
+    lastLogin: 'Never',
+    createdAt: 'Sep 12, 2026'
   }
 ];
 

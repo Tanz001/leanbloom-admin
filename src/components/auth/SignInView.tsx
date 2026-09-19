@@ -58,7 +58,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
         onSignInSuccess({
           name: 'John Admin',
           email: email || 'admin@leanbloom.com',
-          role: 'Master Admin'
+          role: 'Admin'
         });
       }
     }, 450);
@@ -95,11 +95,11 @@ export const SignInView: React.FC<SignInViewProps> = ({
                   : 'bg-[#174A87] text-white'
               }`}
             >
-              {portalMode === 'affiliate' ? 'Affiliate Partner Portal' : 'Master Admin Gateway'}
+              {portalMode === 'affiliate' ? 'Affiliate Portal' : 'Admin Portal'}
             </span>
           </div>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-[#172033]">
-            {portalMode === 'affiliate' ? 'Sign in to Affiliate Portal' : 'Sign in to Master Admin'}
+            {portalMode === 'affiliate' ? 'Sign in to Affiliate Portal' : 'Sign in to Admin'}
           </h2>
           <p className="mt-1 text-xs text-[#667085]">
             {portalMode === 'affiliate'
@@ -135,7 +135,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Master Admin</span>
+            <span>Admin</span>
           </button>
         </div>
 
@@ -274,7 +274,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
               ) : (
                 <>
                   <span>
-                    Sign In to {portalMode === 'affiliate' ? 'Affiliate Portal' : 'Master Admin'}
+                    Sign In to {portalMode === 'affiliate' ? 'Affiliate Portal' : 'Admin'}
                   </span>
                   <ArrowRight className="w-4 h-4" />
                 </>
