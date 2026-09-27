@@ -4,15 +4,16 @@ import {
   DollarSign,
   Plus,
   ShieldCheck,
-  AlertTriangle,
   Edit2,
-  CheckCircle,
-  Building2,
-  TrendingUp,
-  Tag
+  Tag,
+  Trash2,
+  Power,
 } from 'lucide-react';
 import { Product, AffiliatePriceRule, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
+import { PageHeader } from '../common/PageHeader';
+import { RowActionsMenu } from '../common/RowActionsMenu';
+import { mediaUrl } from '../../lib/api';
 
 interface ProductsPricingViewProps {
   mode: 'products' | 'pricing';
@@ -20,18 +21,21 @@ interface ProductsPricingViewProps {
   pricingRules: AffiliatePriceRule[];
   affiliates: Affiliate[];
   onOpenAddProduct: () => void;
+  onOpenEditProduct: (product: Product) => void;
   onOpenEditPricing: (product: Product) => void;
   onToggleProductStatus: (productId: string) => void;
+  onDeleteProduct: (productId: string) => void;
 }
 
 export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
   mode,
   products,
   pricingRules,
-  affiliates,
   onOpenAddProduct,
+  onOpenEditProduct,
   onOpenEditPricing,
-  onToggleProductStatus
+  onToggleProductStatus,
+  onDeleteProduct,
 }) => {
   const [activeTab, setActiveTab] = useState<'catalog' | 'pricing'>(
     mode === 'pricing' ? 'pricing' : 'catalog'
@@ -39,61 +43,52 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="products-pricing-container">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-              {activeTab === 'catalog' ? 'Product Catalog Management' : 'Global Pricing Floor Rules'}
-            </h2>
-          </div>
-          <p className="text-xs text-[#667085] mt-0.5">
-            {activeTab === 'catalog'
-              ? 'Wholesale telehealth compounds, consultations, and lab protocol definitions.'
-              : 'Enforce non-negotiable minimum retail floors across all 128 white-label affiliates.'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-[#F2F4F7] p-1 rounded-lg border border-[#E4E7EC]">
+      <PageHeader
+        title={activeTab === 'catalog' ? 'Products' : 'Pricing'}
+        description={
+          activeTab === 'catalog'
+            ? 'LeanBloom catalog available to affiliates.'
+            : 'Wholesale floors and affiliate markup rules.'
+        }
+        actions={
+          <>
+            <div className="flex items-center bg-white p-0.5 rounded-xl border border-[#ECEEF2]">
+              <button
+                type="button"
+                onClick={() => setActiveTab('catalog')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  activeTab === 'catalog'
+                    ? 'bg-[#0F1C2E] text-white'
+                    : 'text-[#6B7280] hover:text-[#0F1C2E]'
+                }`}
+              >
+                Catalog
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pricing')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  activeTab === 'pricing'
+                    ? 'bg-[#0F1C2E] text-white'
+                    : 'text-[#6B7280] hover:text-[#0F1C2E]'
+                }`}
+              >
+                Pricing
+              </button>
+            </div>
             <button
               type="button"
-              onClick={() => setActiveTab('catalog')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                activeTab === 'catalog'
-                  ? 'bg-white text-[#173B72] shadow-xs font-bold'
-                  : 'text-[#667085] hover:text-[#172033]'
-              }`}
+              id="add-product-btn"
+              onClick={onOpenAddProduct}
+              className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors flex items-center gap-1.5"
             >
-              Wholesale Catalog
+              <Plus className="w-4 h-4" />
+              Add Product
             </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('pricing')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                activeTab === 'pricing'
-                  ? 'bg-white text-[#173B72] shadow-xs font-bold'
-                  : 'text-[#667085] hover:text-[#172033]'
-              }`}
-            >
-              Pricing Rules & Floors
-            </button>
-          </div>
+          </>
+        }
+      />
 
-          <button
-            type="button"
-            id="add-product-btn"
-            onClick={onOpenAddProduct}
-            className="px-3.5 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-lg shadow-xs transition-colors flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Add Product
-          </button>
-        </div>
-      </div>
-
-      {/* Mandatory Floor Rule Banner */}
       <div className="p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex items-start gap-3 text-xs text-[#166534]">
         <ShieldCheck className="w-5 h-5 flex-shrink-0 text-[#2E9B4B] mt-0.5" />
         <div>
@@ -101,14 +96,15 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
             Strict Multi-Tenant Pricing Architecture Rule (Enforced)
           </strong>
           <p className="mt-0.5 text-xs leading-relaxed text-[#166534]">
-            An affiliate storefront selling price can <strong>never fall below</strong> LeanBloom's wholesale base or minimum permitted price. Any affiliate markup is added on top of the wholesale cost. If Master Admin raises the minimum floor, all child tenants are automatically updated to prevent margin compression.
+            An affiliate storefront selling price can{' '}
+            <strong>never fall below</strong> LeanBloom&apos;s wholesale base or
+            minimum permitted price. Any affiliate markup is added on top of the
+            wholesale cost. If Master Admin raises the minimum floor, all child
+            tenants are automatically updated to prevent margin compression.
           </p>
         </div>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 1: WHOLESALE PRODUCTS CATALOG
-         ───────────────────────────────────────────────────────────── */}
       {activeTab === 'catalog' && (
         <div className="bg-white rounded-xl border border-[#E4E7EC] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
@@ -123,17 +119,28 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                   <th className="py-3 px-4 text-right">Total Orders</th>
                   <th className="py-3 px-4">Fulfillment</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                  <th className="py-3 px-4 text-center w-14"> </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
                 {products.map((prod) => (
-                  <tr key={prod.id} className="hover:bg-[#F8F9FC] transition-colors">
+                  <tr
+                    key={prod.id}
+                    className="hover:bg-[#F8F9FC] transition-colors"
+                  >
                     <td className="py-3.5 px-4 font-semibold text-[#172033]">
                       <div className="flex items-start gap-2.5">
-                        <div className="p-2 bg-[#EAF4FB] text-[#173B72] rounded-lg mt-0.5">
-                          <Package className="w-4 h-4" />
-                        </div>
+                        {prod.imageUrl ? (
+                          <img
+                            src={mediaUrl(prod.imageUrl) || undefined}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover border border-[#E4E7EC] flex-shrink-0 mt-0.5"
+                          />
+                        ) : (
+                          <div className="p-2 bg-[#EAF4FB] text-[#173B72] rounded-lg mt-0.5">
+                            <Package className="w-4 h-4" />
+                          </div>
+                        )}
                         <div>
                           <p className="font-bold text-[#172033]">{prod.name}</p>
                           <p className="text-[11px] text-[#667085] line-clamp-1 max-w-sm">
@@ -166,25 +173,34 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                       <StatusBadge status={prod.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onOpenEditPricing(prod)}
-                          className="px-2.5 py-1 text-[11px] font-semibold text-[#173B72] bg-[#EAF4FB] hover:bg-[#d8ecf9] rounded-md transition-colors flex items-center gap-1"
-                          title="Set Base & Minimum Floor Price"
-                        >
-                          <DollarSign className="w-3 h-3 text-[#2D82C4]" />
-                          Price Floor
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onToggleProductStatus(prod.id)}
-                          className="p-1 text-[#667085] hover:text-[#D64545] hover:bg-[#FEE4E2] rounded transition-colors"
-                          title={prod.status === 'Active' ? 'Deactivate' : 'Activate'}
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <RowActionsMenu
+                        items={[
+                          {
+                            label: 'Edit product',
+                            icon: <Edit2 className="w-4 h-4" />,
+                            onClick: () => onOpenEditProduct(prod),
+                          },
+                          {
+                            label: 'Edit price floor',
+                            icon: <DollarSign className="w-4 h-4" />,
+                            onClick: () => onOpenEditPricing(prod),
+                          },
+                          {
+                            label:
+                              prod.status === 'Active'
+                                ? 'Deactivate'
+                                : 'Activate',
+                            icon: <Power className="w-4 h-4" />,
+                            onClick: () => onToggleProductStatus(prod.id),
+                          },
+                          {
+                            label: 'Delete',
+                            icon: <Trash2 className="w-4 h-4" />,
+                            tone: 'danger',
+                            onClick: () => onDeleteProduct(prod.id),
+                          },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -194,14 +210,13 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 2: DEDICATED PRICING MANAGEMENT (Prompt #17)
-         ───────────────────────────────────────────────────────────── */}
       {activeTab === 'pricing' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-5">
             {pricingRules.map((rule) => {
-              const matchedProduct = products.find((p) => p.id === rule.productId);
+              const matchedProduct = products.find(
+                (p) => p.id === rule.productId
+              );
               return (
                 <div
                   key={rule.productId}
@@ -213,10 +228,16 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                         <span className="p-1.5 bg-[#EAF4FB] text-[#173B72] rounded-md">
                           <Tag className="w-4 h-4" />
                         </span>
-                        <h3 className="text-base font-bold text-[#172033]">{rule.productName}</h3>
+                        <h3 className="text-base font-bold text-[#172033]">
+                          {rule.productName}
+                        </h3>
                       </div>
                       <p className="text-xs text-[#667085] mt-1">
-                        Active in <strong className="text-[#172033]">{rule.activeAffiliates} Affiliates</strong> across nationwide clinical networks.
+                        Active in{' '}
+                        <strong className="text-[#172033]">
+                          {rule.activeAffiliates} Affiliates
+                        </strong>{' '}
+                        across nationwide clinical networks.
                       </p>
                     </div>
 
@@ -252,7 +273,6 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Affiliate Price Comparison Grid */}
                   <div className="mt-4">
                     <span className="text-xs font-bold text-[#667085] uppercase tracking-wider block mb-2">
                       Active Child Tenant Selling Prices (Real-Time Enforcement):
@@ -261,7 +281,9 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                       {rule.affiliatePriceExamples.map((ex) => {
                         const markupDollar = ex.sellingPrice - rule.basePrice;
-                        const markupPct = Math.round((markupDollar / rule.basePrice) * 100);
+                        const markupPct = Math.round(
+                          (markupDollar / rule.basePrice) * 100
+                        );
 
                         return (
                           <div
@@ -278,7 +300,9 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                             </div>
 
                             <div className="mt-2 flex items-baseline justify-between">
-                              <span className="text-xs text-[#667085]">Selling Price:</span>
+                              <span className="text-xs text-[#667085]">
+                                Selling Price:
+                              </span>
                               <span className="font-mono text-base font-bold text-[#173B72]">
                                 ${ex.sellingPrice}
                               </span>
@@ -287,7 +311,8 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                             <div className="mt-1 pt-1.5 border-t border-gray-200 text-[10px] text-[#667085] flex justify-between">
                               <span>Floor Clearance:</span>
                               <span className="text-[#2E9B4B] font-semibold">
-                                +${ex.sellingPrice - rule.minimumPrice} above min
+                                +${ex.sellingPrice - rule.minimumPrice} above
+                                min
                               </span>
                             </div>
                           </div>

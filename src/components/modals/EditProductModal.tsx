@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Package, Check, AlertCircle, ImagePlus, X } from 'lucide-react';
 import { Product } from '../../types';
+import { mediaUrl } from '../../lib/api';
 import {
   ModalShell,
   ModalSelect,
@@ -10,31 +11,30 @@ import {
   modalInputClass,
   modalLabelClass,
 } from './ModalShell';
+import { CreateProductInput } from './CreateProductModal';
 
-export type CreateProductInput = Omit<
-  Product,
-  'id' | 'activeAffiliatesCount' | 'ordersCount' | 'imageUrl'
->;
-
-interface CreateProductModalProps {
+interface EditProductModalProps {
   isOpen: boolean;
+  product: Product | null;
   onClose: () => void;
-  onCreate: (
+  onSave: (
+    productId: string,
     product: CreateProductInput,
     imageFile?: File | null
   ) => void | Promise<void>;
 }
 
-export const CreateProductModal: React.FC<CreateProductModalProps> = ({
+export const EditProductModal: React.FC<EditProductModalProps> = ({
   isOpen,
+  product,
   onClose,
-  onCreate,
+  onSave,
 }) => {
   const [name, setName] = useState('');
   const [category, setCategory] =
     useState<Product['category']>('Medical Program');
-  const [basePrice, setBasePrice] = useState(199);
-  const [minimumPrice, setMinimumPrice] = useState(249);
+  const [basePrice, setBasePrice] = useState(0);
+  const [minimumPrice, setMinimumPrice] = useState(0);
   const [description, setDescription] = useState('');
   const [stockStatus, setStockStatus] =
     useState<Product['stockStatus']>('In Stock');
@@ -45,26 +45,27 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!imageFile) {
-      setPreviewUrl(null);
-      return;
-    }
+    if (!product || !isOpen) return;
+    setName(product.name);
+    setCategory(product.category);
+    setBasePrice(product.basePrice);
+    setMinimumPrice(product.minimumPrice);
+    setDescription(product.description || '');
+    setStockStatus(product.stockStatus);
+    setStatus(product.status);
+    setImageFile(null);
+    setPreviewUrl(mediaUrl(product.imageUrl) || null);
+    setError('');
+  }, [product, isOpen]);
+
+  useEffect(() => {
+    if (!imageFile) return;
     const url = URL.createObjectURL(imageFile);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [imageFile]);
 
-  const resetForm = () => {
-    setName('');
-    setCategory('Medical Program');
-    setBasePrice(199);
-    setMinimumPrice(249);
-    setDescription('');
-    setStockStatus('In Stock');
-    setStatus('Active');
-    setImageFile(null);
-    setError('');
-  };
+  if (!product) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +81,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     setSaving(true);
     setError('');
     try {
-      await onCreate(
+      await onSave(
+        product.id,
         {
           name,
           category,
@@ -92,10 +94,9 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
         },
         imageFile
       );
-      resetForm();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create product');
+      setError(err instanceof Error ? err.message : 'Failed to update product');
     } finally {
       setSaving(false);
     }
@@ -105,8 +106,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
-      title="Add product"
-      description="Set wholesale base and minimum retail for the catalog."
+      title="Edit product"
+      description="Update catalog details, pricing floors, and image."
       icon={<Package className="w-5 h-5" />}
       maxWidth="lg"
     >
@@ -118,7 +119,7 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
               {previewUrl ? (
                 <img
                   src={previewUrl}
-                  alt="Preview"
+                  alt=""
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -142,16 +143,19 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
                 className="block w-full text-sm text-[#5B6B7C] file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#EAF4FB] file:text-[#12345F] hover:file:bg-[#d8ecf9]"
               />
               <p className={modalHintClass}>
-                PNG, JPG, WebP or GIF · max 5 MB
+                Leave empty to keep the current image · max 5 MB
               </p>
               {imageFile && (
                 <button
                   type="button"
-                  onClick={() => setImageFile(null)}
+                  onClick={() => {
+                    setImageFile(null);
+                    setPreviewUrl(mediaUrl(product.imageUrl) || null);
+                  }}
                   className="inline-flex items-center gap-1 text-xs font-medium text-[#B42318] hover:underline"
                 >
                   <X className="w-3.5 h-3.5" />
-                  Remove image
+                  Discard new image
                 </button>
               )}
             </div>
@@ -165,7 +169,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Tirzepatide Metabolic Program"
             className={modalInputClass}
           />
         </div>
@@ -215,7 +218,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
                 className={`${modalInputClass} pl-8`}
               />
             </div>
-            <p className={modalHintClass}>LeanBloom wholesale cost</p>
           </div>
           <div>
             <label className={modalLabelClass}>Minimum price ($)</label>
@@ -231,7 +233,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
                 className={`${modalInputClass} pl-8`}
               />
             </div>
-            <p className={modalHintClass}>Affiliate retail floor</p>
           </div>
         </div>
 
@@ -241,7 +242,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Short clinical or catalog description…"
             className={`${modalInputClass} resize-none`}
           />
         </div>
@@ -280,7 +280,7 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
             disabled={saving}
           >
             <Check className="w-4 h-4" />
-            {saving ? 'Saving…' : 'Add product'}
+            {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </form>

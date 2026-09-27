@@ -3,13 +3,12 @@ import {
   Building2,
   Search,
   Plus,
-  Filter,
-  ExternalLink,
   Eye,
   Edit2,
   Trash2,
   Power,
   Globe,
+  ExternalLink,
   Mail,
   Phone,
   ArrowLeft,
@@ -25,6 +24,9 @@ import {
 import { Affiliate, Order, Patient, Product } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
 import { StatCard } from '../common/StatCard';
+import { PageHeader } from '../common/PageHeader';
+import { RowActionsMenu } from '../common/RowActionsMenu';
+import { mediaUrl } from '../../lib/api';
 
 interface AffiliatesViewProps {
   affiliates: Affiliate[];
@@ -34,8 +36,9 @@ interface AffiliatesViewProps {
   selectedAffiliate: Affiliate | null;
   onSelectAffiliate: (aff: Affiliate | null) => void;
   onOpenCreateAffiliate: () => void;
-  onOpenLoginAsAffiliate: (aff: Affiliate) => void;
+  onOpenEditAffiliate: (aff: Affiliate) => void;
   onToggleAffiliateStatus: (affId: string) => void;
+  onDeleteAffiliate: (affId: string) => void;
   onNavigateToBranding?: (affiliateId: string) => void;
   onNavigateToDomains?: (affiliateId: string) => void;
 }
@@ -48,10 +51,11 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
   selectedAffiliate,
   onSelectAffiliate,
   onOpenCreateAffiliate,
-  onOpenLoginAsAffiliate,
+  onOpenEditAffiliate,
   onToggleAffiliateStatus,
+  onDeleteAffiliate,
   onNavigateToBranding,
-  onNavigateToDomains
+  onNavigateToDomains,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Pending' | 'Inactive' | 'Suspended'>('All');
@@ -121,19 +125,19 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => onOpenEditAffiliate(selectedAffiliate)}
+              className="px-3 py-1.5 text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-[#F8F9FC] rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              Edit
+            </button>
+            <button
+              type="button"
               onClick={() => onToggleAffiliateStatus(selectedAffiliate.id)}
               className="px-3 py-1.5 text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-[#F8F9FC] rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Power className="w-3.5 h-3.5 text-[#D99A18]" />
-              {selectedAffiliate.status === 'Active' ? 'Suspend Tenant' : 'Activate Tenant'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenLoginAsAffiliate(selectedAffiliate)}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-lg shadow-xs transition-colors flex items-center gap-1.5"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Login as Affiliate
+              {selectedAffiliate.status === 'Active' ? 'Suspend' : 'Activate'}
             </button>
           </div>
         </div>
@@ -174,8 +178,6 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 value={selectedAffiliate.ordersCount.toLocaleString()}
                 change="+11.0%"
                 icon={<ShoppingCart className="w-4 h-4" />}
-                iconBgColor="bg-[#F0FDF4]"
-                iconColor="text-[#2E9B4B]"
               />
               <StatCard
                 label="Total Revenue"
@@ -186,15 +188,13 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
               <StatCard
                 label="Affiliate Commission"
                 value={`$${selectedAffiliate.commission.toLocaleString()}`}
-                change="Paid Bi-weekly"
+                change="+9%"
                 icon={<DollarSign className="w-4 h-4" />}
-                iconBgColor="bg-[#EAF4FB]"
-                iconColor="text-[#2D82C4]"
               />
               <StatCard
                 label="Avg Order Value"
                 value={`$${avgOrderValue}`}
-                change="Healthy AOV"
+                change="+3%"
                 icon={<TrendingUp className="w-4 h-4" />}
               />
               <StatCard
@@ -202,8 +202,6 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 value="4.8%"
                 change="+0.6%"
                 icon={<CheckCircle className="w-4 h-4" />}
-                iconBgColor="bg-[#EAF6E7]"
-                iconColor="text-[#4FAF4A]"
               />
             </div>
 
@@ -607,27 +605,24 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 pb-12" id="affiliates-list-container">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">Affiliates</h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Manage all white-label clinics & partners operating on the LeanBloom platform.
-          </p>
-        </div>
-        <button
-          type="button"
-          id="create-affiliate-top-btn"
-          onClick={onOpenCreateAffiliate}
-          className="px-3.5 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-lg shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Create Affiliate
-        </button>
-      </div>
+      <PageHeader
+        title="Affiliates"
+        description="Manage white-label clinics and partners on the LeanBloom platform."
+        actions={
+          <button
+            type="button"
+            id="create-affiliate-top-btn"
+            onClick={onOpenCreateAffiliate}
+            className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Create Affiliate
+          </button>
+        }
+      />
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-[#E4E7EC] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-[#ECEEF2] flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-[#98A2B3] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -680,12 +675,20 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 <tr key={aff.id} className="hover:bg-[#F8F9FC] transition-colors">
                   <td className="py-3 px-4 font-semibold text-[#172033]">
                     <div className="flex items-center gap-2.5">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-xs flex-shrink-0"
-                        style={{ backgroundColor: aff.primaryColor || '#173B72' }}
-                      >
-                        {aff.name.substring(0, 2).toUpperCase()}
-                      </div>
+                      {aff.logoUrl ? (
+                        <img
+                          src={mediaUrl(aff.logoUrl) || undefined}
+                          alt=""
+                          className="w-8 h-8 rounded-lg object-contain bg-white border border-[#E4E7EC] flex-shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-xs flex-shrink-0"
+                          style={{ backgroundColor: aff.primaryColor || '#173B72' }}
+                        >
+                          {aff.name.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
                       <div>
                         <p className="font-bold text-[#172033] hover:text-[#2D82C4] cursor-pointer" onClick={() => onSelectAffiliate(aff)}>
                           {aff.name}
@@ -712,26 +715,32 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                   </td>
                   <td className="py-3 px-4 text-[#667085] whitespace-nowrap">{aff.createdAt}</td>
                   <td className="py-3 px-4 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => onSelectAffiliate(aff)}
-                        className="px-2 py-1 text-[11px] font-semibold text-[#173B72] bg-[#EAF4FB] hover:bg-[#d8ecf9] rounded transition-colors flex items-center gap-1"
-                        title="View Affiliate Detail"
-                      >
-                        <Eye className="w-3 h-3" />
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onOpenLoginAsAffiliate(aff)}
-                        className="px-2 py-1 text-[11px] font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded transition-colors flex items-center gap-1"
-                        title="Login as Affiliate"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        Login
-                      </button>
-                    </div>
+                    <RowActionsMenu
+                      items={[
+                        {
+                          label: 'View',
+                          icon: <Eye className="w-4 h-4" />,
+                          onClick: () => onSelectAffiliate(aff),
+                        },
+                        {
+                          label: 'Edit',
+                          icon: <Edit2 className="w-4 h-4" />,
+                          onClick: () => onOpenEditAffiliate(aff),
+                        },
+                        {
+                          label:
+                            aff.status === 'Active' ? 'Suspend' : 'Activate',
+                          icon: <Power className="w-4 h-4" />,
+                          onClick: () => onToggleAffiliateStatus(aff.id),
+                        },
+                        {
+                          label: 'Delete',
+                          icon: <Trash2 className="w-4 h-4" />,
+                          tone: 'danger',
+                          onClick: () => onDeleteAffiliate(aff.id),
+                        },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}

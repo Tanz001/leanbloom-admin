@@ -14,6 +14,7 @@ import {
 import { CommissionRecord, PaymentTransaction, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
 import { StatCard } from '../common/StatCard';
+import { PageHeader } from '../common/PageHeader';
 
 interface CommissionsPaymentsViewProps {
   mode: 'commissions' | 'payments';
@@ -53,29 +54,22 @@ export const CommissionsPaymentsView: React.FC<CommissionsPaymentsViewProps> = (
 
   return (
     <div className="space-y-6 pb-12" id="commissions-payments-container">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            {activeTab === 'commissions' ? 'Commission Management & Payouts' : 'Payment Reconciliation & Ledger'}
-          </h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            {activeTab === 'commissions'
-              ? 'Calculate child tenant markups, net wholesale revenues, and bi-weekly disbursement schedules.'
-              : 'End-to-end audit of Stripe Connect transactions, credit cards, and customer invoices.'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {/* Tab switcher */}
-          <div className="flex items-center bg-[#F2F4F7] p-1 rounded-lg border border-[#E4E7EC]">
+      <PageHeader
+        title={activeTab === 'commissions' ? 'Commissions' : 'Payments'}
+        description={
+          activeTab === 'commissions'
+            ? 'Affiliate earnings and payout schedules.'
+            : 'Transaction ledger and reconciliation.'
+        }
+        actions={
+          <div className="flex items-center bg-white p-0.5 rounded-xl border border-[#ECEEF2]">
             <button
               type="button"
               onClick={() => setActiveTab('commissions')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 activeTab === 'commissions'
-                  ? 'bg-white text-[#173B72] shadow-xs font-bold'
-                  : 'text-[#667085] hover:text-[#172033]'
+                  ? 'bg-[#0F1C2E] text-white'
+                  : 'text-[#6B7280] hover:text-[#0F1C2E]'
               }`}
             >
               Commissions
@@ -83,64 +77,43 @@ export const CommissionsPaymentsView: React.FC<CommissionsPaymentsViewProps> = (
             <button
               type="button"
               onClick={() => setActiveTab('payments')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 activeTab === 'payments'
-                  ? 'bg-white text-[#173B72] shadow-xs font-bold'
-                  : 'text-[#667085] hover:text-[#172033]'
+                  ? 'bg-[#0F1C2E] text-white'
+                  : 'text-[#6B7280] hover:text-[#0F1C2E]'
               }`}
             >
               Payments
             </button>
           </div>
+        }
+      />
 
-          <button
-            type="button"
-            onClick={() => alert('Generating financial statement spreadsheet...')}
-            className="px-3.5 py-2 text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-[#F8F9FC] rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <Download className="w-4 h-4 text-[#667085]" />
-            Export Statement
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Cards for Financial Clarity (Prompt #18 & #19) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          label="Total Gross Platform GMV"
+          label="Platform GMV"
           value={`$${totalGrossSales.toLocaleString()}`}
           change="+16.8%"
-          period="Across all affiliates"
-          icon={<DollarSign className="w-5 h-5" />}
-          iconBgColor="bg-[#EAF4FB]"
-          iconColor="text-[#173B72]"
+          icon={<DollarSign className="w-4 h-4" />}
         />
         <StatCard
-          label="LeanBloom Base Revenue"
+          label="LeanBloom revenue"
           value={`$${totalLeanBloomBase.toLocaleString()}`}
-          change="Wholesale Margin"
-          period="Pharmacy & Platform"
-          icon={<ShieldCheck className="w-5 h-5" />}
-          iconBgColor="bg-[#EAF6E7]"
-          iconColor="text-[#2E9B4B]"
+          change="+12%"
+          icon={<ShieldCheck className="w-4 h-4" />}
         />
         <StatCard
-          label="Affiliate Total Earnings"
+          label="Affiliate earnings"
           value={`$${totalAffiliateCommissions.toLocaleString()}`}
           change="+14.5%"
-          period="Earned by clinics"
-          icon={<Percent className="w-5 h-5" />}
-          iconBgColor="bg-[#EAF4FB]"
-          iconColor="text-[#2D82C4]"
+          icon={<Percent className="w-4 h-4" />}
         />
         <StatCard
-          label="Pending Batch Payout"
+          label="Pending payout"
           value={`$${totalPendingPayout.toLocaleString()}`}
-          change="Next Batch"
-          period="Due in 4 days"
-          icon={<Clock className="w-5 h-5" />}
-          iconBgColor="bg-[#FEF6EE]"
-          iconColor="text-[#D99A18]"
+          change="+4%"
+          icon={<Clock className="w-4 h-4" />}
         />
       </div>
 

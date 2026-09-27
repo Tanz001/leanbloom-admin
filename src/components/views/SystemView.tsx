@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { NotificationItem, AdminUser } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
+import { PageHeader } from '../common/PageHeader';
 
 interface SystemViewProps {
   initialSub?: 'notifications' | 'users-roles' | 'settings';
@@ -58,37 +59,40 @@ export const SystemView: React.FC<SystemViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="system-view-container">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">System</h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Admin users, notifications, and platform settings.
-          </p>
-        </div>
-
-        <div className="flex items-center bg-[#F2F4F7] p-1 rounded-lg border border-[#E4E7EC] overflow-x-auto self-start sm:self-auto">
-          {(
-            [
-              { id: 'notifications', label: 'Notifications' },
-              { id: 'users-roles', label: 'Admin Users' },
-              { id: 'settings', label: 'Platform Settings' }
-            ] as const
-          ).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveTab(item.id)}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                activeTab === item.id
-                  ? 'bg-white text-[#173B72] shadow-xs font-bold'
-                  : 'text-[#667085] hover:text-[#172033]'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        title={
+          activeTab === 'notifications'
+            ? 'Notifications'
+            : activeTab === 'users-roles'
+              ? 'Admin Users'
+              : 'Settings'
+        }
+        description="Admin users, notifications, and platform preferences."
+        actions={
+          <div className="flex items-center bg-white p-0.5 rounded-xl border border-[#ECEEF2] overflow-x-auto">
+            {(
+              [
+                { id: 'notifications', label: 'Notifications' },
+                { id: 'users-roles', label: 'Admin Users' },
+                { id: 'settings', label: 'Settings' }
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
+                  activeTab === item.id
+                    ? 'bg-[#0F1C2E] text-white'
+                    : 'text-[#6B7280] hover:text-[#0F1C2E]'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {/* ─────────────────────────────────────────────────────────────
           1. NOTIFICATIONS CENTER (Prompt #25)

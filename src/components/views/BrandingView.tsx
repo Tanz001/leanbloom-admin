@@ -27,6 +27,7 @@ import {
   Award
 } from 'lucide-react';
 import { Affiliate, Product } from '../../types';
+import { PageHeader } from '../common/PageHeader';
 
 interface BrandingViewProps {
   affiliates: Affiliate[];
@@ -194,44 +195,47 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="branding-view-container">
+      <PageHeader
+        title="Branding"
+        description="Logo, colors, and storefront identity per affiliate."
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-[#6B7280] whitespace-nowrap">Clinic</span>
+            <select
+              value={currentAffId}
+              onChange={(e) => setCurrentAffId(e.target.value)}
+              className="px-3 py-2 text-xs font-medium bg-white border border-[#ECEEF2] rounded-xl text-[#0F1C2E] focus:outline-none focus:border-[#0F1C2E]"
+            >
+              {affiliates.map((aff) => (
+                <option key={aff.id} value={aff.id}>
+                  {aff.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      />
+
       {/* Top Affiliate Selector Bar */}
-      <div className="bg-white rounded-xl border border-[#E4E7EC] p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#ECEEF2] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-xs transition-colors"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold text-sm font-display transition-colors"
             style={{ backgroundColor: primaryColor }}
           >
             {selectedLogoPreset || name.substring(0, 2).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#172033]">White-Label Branding Studio</h2>
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-[#EAF6E7] text-[#2E9B4B]">
-                Live Preview
+              <h2 className="text-sm font-semibold text-[#0F1C2E] font-display">{name}</h2>
+              <span className="px-2 py-0.5 text-[10px] font-medium uppercase rounded-full bg-[#F3F4F6] text-[#6B7280]">
+                Live preview
               </span>
             </div>
-            <p className="text-xs text-[#667085]">
-              Customize clinic storefront, intake design, CSS tokens, and patient portal styling
+            <p className="text-xs text-[#9CA3AF]">
+              Customize storefront and patient portal styling
             </p>
           </div>
-        </div>
-
-        {/* Affiliate Clinic Switcher */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[#344054] whitespace-nowrap">
-            Selected Clinic:
-          </span>
-          <select
-            value={currentAffId}
-            onChange={(e) => setCurrentAffId(e.target.value)}
-            className="px-3 py-2 text-xs font-semibold bg-[#F8F9FC] border border-[#D0D5DD] rounded-xl text-[#173B72] focus:outline-hidden focus:border-[#173B72]"
-          >
-            {affiliates.map((aff) => (
-              <option key={aff.id} value={aff.id}>
-                {aff.name} ({aff.domain})
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 

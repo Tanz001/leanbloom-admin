@@ -48,7 +48,10 @@ export interface Affiliate {
   welcomeMessage?: string;
   supportEmail?: string;
   supportPhone?: string;
+  businessHours?: string;
   hidePoweredBy?: boolean;
+  trustBadgeText?: string;
+  clinicalPartnerNote?: string;
   termsUrl?: string;
   privacyUrl?: string;
   customCss?: string;
@@ -120,6 +123,7 @@ export interface Product {
   ordersCount: number;
   status: 'Active' | 'Draft' | 'Archived';
   description: string;
+  imageUrl?: string | null;
   stockStatus: 'In Stock' | 'Compounding' | 'Backorder';
 }
 
@@ -204,6 +208,7 @@ export type AffiliateRoute =
   | 'dashboard'
   | 'patients'
   | 'orders'
+  | 'products'
   | 'sales'
   | 'commissions'
   | 'payments'

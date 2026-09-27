@@ -12,6 +12,7 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { Affiliate, Product } from '../../types';
+import { PageHeader } from '../common/PageHeader';
 
 interface ReportsViewProps {
   affiliates: Affiliate[];
@@ -65,23 +66,16 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ affiliates, products }
 
   return (
     <div className="space-y-6 pb-12" id="reports-view-container">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            Reports & Sales
-          </h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Export affiliate sales, orders, and commission summaries.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Reports"
+        description="Export affiliate sales, orders, and commission summaries."
+      />
 
       {/* Generator Control Card */}
-      <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 shadow-xs space-y-4">
-        <h3 className="text-sm font-bold text-[#172033] flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#173B72]" />
-          Configure Report Parameters
+      <div className="bg-white rounded-xl border border-[#ECEEF2] p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-[#0F1C2E] flex items-center gap-2 font-display">
+          <Filter className="w-4 h-4 text-[#9CA3AF]" />
+          Configure report
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -103,10 +103,10 @@ export const AffiliateDashboardView: React.FC<AffiliateDashboardViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#172033] tracking-tight">
-            Good morning, {affiliateProfile.name}
+            Welcome, {affiliateProfile.name}
           </h1>
           <p className="text-xs text-[#667085] mt-1">
-            Here's what's happening with your LeanBloom white-label business.
+            Your LeanBloom partner portal — live storefront metrics.
           </p>
         </div>
 
@@ -142,10 +142,8 @@ export const AffiliateDashboardView: React.FC<AffiliateDashboardViewProps> = ({
             </div>
           </div>
           <div className="text-2xl font-black text-[#172033] tracking-tight">{patients.length}</div>
-          <div className="flex items-center gap-1 mt-2 text-[11px] font-semibold text-[#4A9B52]">
-            <TrendingUp className="w-3 h-3" />
-            <span>+12.5%</span>
-            <span className="text-[#667085] font-normal ml-1">vs last month</span>
+          <div className="flex items-center gap-1 mt-2 text-[11px] text-[#667085]">
+            <span>Customers in your clinic</span>
           </div>
         </div>
 

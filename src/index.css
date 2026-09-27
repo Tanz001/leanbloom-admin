@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/* LeanBloom logo palette */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+
+  --color-lb-navy: #12345F;
+  --color-lb-navy-deep: #0B2440;
+  --color-lb-blue: #2D82C4;
+  --color-lb-blue-soft: #5BA3D9;
+  --color-lb-green: #4FAF4A;
+  --color-lb-green-deep: #3A8F36;
+  --color-lb-lime: #8BC34A;
+  --color-lb-mist: #FFFFFF;
+  --color-lb-ink: #0F1C2E;
+}
+
 @layer base {
+  :root {
+    --lb-navy: #12345F;
+    --lb-navy-deep: #0B2440;
+    --lb-blue: #2D82C4;
+    --lb-blue-soft: #5BA3D9;
+    --lb-green: #4FAF4A;
+    --lb-green-deep: #3A8F36;
+    --lb-lime: #A8D06A;
+    --lb-mist: #FFFFFF;
+    --lb-ink: #0F1C2E;
+    --lb-gradient: linear-gradient(135deg, #12345F 0%, #2D82C4 48%, #4FAF4A 100%);
+    --lb-gradient-soft: linear-gradient(135deg, rgba(18, 52, 95, 0.08) 0%, rgba(45, 130, 196, 0.08) 50%, rgba(79, 175, 74, 0.1) 100%);
+  }
+
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: #172033;
-    background-color: #F7F9FC;
+    font-family: var(--font-sans);
+    color: var(--lb-ink);
+    background-color: var(--lb-mist);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
   }
 }
 
-/* Custom scrollbars for data tables and panels */
+@layer utilities {
+  .text-lb-gradient {
+    background: var(--lb-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-lb-gradient {
+    background: var(--lb-gradient);
+  }
+
+  .bg-lb-soft {
+    background: var(--lb-gradient-soft);
+  }
+
+  .ring-lb-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 130, 196, 0.35);
+  }
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f3f7;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C5CDD8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--lb-blue);
 }
-

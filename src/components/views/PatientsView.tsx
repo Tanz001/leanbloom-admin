@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Patient, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
+import { PageHeader } from '../common/PageHeader';
 
 interface PatientsViewProps {
   patients: Patient[];
@@ -40,22 +41,19 @@ export const PatientsView: React.FC<PatientsViewProps> = ({ patients, affiliates
 
   return (
     <div className="space-y-6 pb-12" id="patients-view-container">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">Customers</h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Customers from every affiliate storefront, in one place.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#173B72] bg-[#EAF4FB] px-3 py-1.5 rounded-lg border border-[#2D82C4]/20 self-start sm:self-auto">
-          <UserCheck className="w-4 h-4 text-[#2D82C4]" />
-          <span>{patients.length.toLocaleString()} customers loaded</span>
-        </div>
-      </div>
+      <PageHeader
+        title="Customers"
+        description="Customers from every affiliate storefront, in one place."
+        actions={
+          <div className="flex items-center gap-2 text-xs font-medium text-[#4B5563] bg-white px-3 py-2 rounded-xl border border-[#ECEEF2]">
+            <UserCheck className="w-4 h-4 text-[#9CA3AF]" />
+            <span>{patients.length.toLocaleString()} loaded</span>
+          </div>
+        }
+      />
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-[#ECEEF2] flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-[#98A2B3] absolute left-3 top-1/2 -translate-y-1/2" />
           <input

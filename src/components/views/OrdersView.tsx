@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Order, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
+import { PageHeader } from '../common/PageHeader';
 
 interface OrdersViewProps {
   orders: Order[];
@@ -43,28 +44,23 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="orders-view-container">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-[#E4E7EC] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">Master Orders Stream</h2>
-          <p className="text-xs text-[#667085] mt-0.5">
-            Real-time order status across affiliate storefronts.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+      <PageHeader
+        title="Orders"
+        description="Orders across all affiliate storefronts."
+        actions={
           <button
             type="button"
-            onClick={() => alert('Exporting all 18,421 orders to CSV...')}
-            className="px-3.5 py-2 text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-[#F8F9FC] rounded-lg transition-colors flex items-center gap-1.5"
+            onClick={() => alert('Exporting orders to CSV...')}
+            className="px-3.5 py-2 text-xs font-semibold text-[#4B5563] bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] rounded-xl transition-colors flex items-center gap-1.5"
           >
-            <Download className="w-4 h-4 text-[#667085]" />
-            Export CSV
+            <Download className="w-4 h-4 text-[#9CA3AF]" />
+            Export
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-[#ECEEF2] flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-[#98A2B3] absolute left-3 top-1/2 -translate-y-1/2" />
           <input

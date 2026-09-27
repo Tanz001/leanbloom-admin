@@ -1,6 +1,11 @@
 import React from 'react';
-import { ShieldAlert, ExternalLink, X, Building2 } from 'lucide-react';
+import { ShieldAlert, ExternalLink, Building2 } from 'lucide-react';
 import { Affiliate } from '../../types';
+import {
+  ModalShell,
+  modalBtnPrimary,
+  modalBtnSecondary,
+} from './ModalShell';
 
 interface LoginAsAffiliateModalProps {
   isOpen: boolean;
@@ -13,77 +18,65 @@ export const LoginAsAffiliateModal: React.FC<LoginAsAffiliateModalProps> = ({
   isOpen,
   affiliate,
   onClose,
-  onConfirm
+  onConfirm,
 }) => {
-  if (!isOpen || !affiliate) return null;
+  if (!affiliate) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-xl border border-[#E4E7EC] shadow-2xl w-full max-w-md overflow-hidden">
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-[#E4E7EC] flex items-center justify-between bg-[#FEF3F2]">
-          <div className="flex items-center gap-2.5 text-[#B42318]">
-            <ShieldAlert className="w-5 h-5 flex-shrink-0" />
-            <h3 className="text-sm font-bold text-[#172033]">Impersonate Affiliate Tenant</h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-[#667085] hover:text-[#172033] rounded-lg transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-5 space-y-3.5">
-          <div className="flex items-center gap-3 p-3 bg-[#F8F9FC] rounded-lg border border-[#E4E7EC]">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: affiliate.primaryColor || '#173B72' }}
-            >
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#172033]">{affiliate.name}</p>
-              <p className="text-xs text-[#2D82C4] font-mono">{affiliate.subdomain}</p>
-            </div>
-          </div>
-
-          <p className="text-xs text-[#344054] leading-relaxed">
-            You are about to launch an authenticated session inside the isolated white-label portal for{' '}
-            <strong className="text-[#172033]">{affiliate.name}</strong>.
-          </p>
-
-          <div className="p-3 bg-[#FFF9F5] border border-[#FEDF89] rounded-lg text-xs text-[#B54708] space-y-1">
-            <p className="font-semibold">Security & Audit Compliance Notice:</p>
-            <ul className="list-disc pl-4 text-[11px] space-y-0.5">
-              <li>Master Admin identity will be logged in permanent HIPAA audit trails.</li>
-              <li>Affiliate actions taken during this session will carry an impersonation flag.</li>
-              <li>Session automatically expires after 60 minutes of inactivity.</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-3.5 border-t border-[#E4E7EC] bg-[#F8F9FC] flex items-center justify-end gap-2.5">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3.5 py-1.5 text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] rounded-lg hover:bg-[#F2F4F7] transition-colors"
-          >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Login as affiliate"
+      description="Open this partner’s portal with an audited admin session."
+      icon={<ShieldAlert className="w-5 h-5" />}
+      headerTone="warning"
+      maxWidth="md"
+      footer={
+        <>
+          <button type="button" onClick={onClose} className={modalBtnSecondary}>
             Cancel
           </button>
           <button
             type="button"
-            id="confirm-impersonate-btn"
             onClick={() => onConfirm(affiliate)}
-            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+            className={modalBtnPrimary}
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Launch Affiliate Session
+            <ExternalLink className="w-4 h-4" />
+            Continue
           </button>
+        </>
+      }
+    >
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3 p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E4EAF0]">
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+            style={{ backgroundColor: affiliate.primaryColor || '#12345F' }}
+          >
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold text-[#12345F] truncate">
+              {affiliate.name}
+            </p>
+            <p className="text-sm text-[#2D82C4] font-mono truncate">
+              {affiliate.subdomain}
+            </p>
+          </div>
         </div>
+
+        <p className="text-sm text-[#5B6B7C] leading-relaxed">
+          You will enter the white-label portal for{' '}
+          <span className="font-semibold text-[#12345F]">{affiliate.name}</span>.
+          This action is recorded in the audit log.
+        </p>
+
+        <ul className="text-sm text-[#92400E] bg-[#FFFAEB] border border-[#FEDF89]/70 rounded-xl px-4 py-3 space-y-1.5 list-disc pl-8">
+          <li>Admin identity is logged for compliance</li>
+          <li>Actions are flagged as impersonation</li>
+          <li>Session expires after inactivity</li>
+        </ul>
       </div>
-    </div>
+    </ModalShell>
   );
 };

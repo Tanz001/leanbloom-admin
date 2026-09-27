@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { DomainItem, Affiliate } from '../../types';
 import { StatCard } from '../common/StatCard';
+import { PageHeader } from '../common/PageHeader';
 import { DnsConfigModal } from '../modals/DnsConfigModal';
 import { AddDomainModal } from '../modals/AddDomainModal';
 
@@ -86,7 +87,21 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12" id="domains-page-container">
-      {/* Top Banner Alert if bulk check completed */}
+      <PageHeader
+        title="Domains"
+        description="Subdomains and custom domains for affiliate storefronts."
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Add Domain
+          </button>
+        }
+      />
+
       {bulkCheckBanner && (
         <div className="p-4 bg-[#EAF6E7] border border-[#2E9B4B]/30 rounded-xl flex items-center justify-between text-xs text-[#2E9B4B] animate-in fade-in">
           <div className="flex items-center gap-2 font-medium">
@@ -106,38 +121,32 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          label="Total Domains Active"
+          label="Active domains"
           value={`${activeCount} of ${domains.length}`}
-          change={`${Math.round((activeCount / domains.length) * 100)}% online`}
+          change={`${Math.round((activeCount / Math.max(domains.length, 1)) * 100)}%`}
           icon={<Globe className="w-4 h-4" />}
-          iconBgColor="bg-[#EAF4FB]"
-          iconColor="text-[#173B72]"
         />
         <StatCard
-          label="SSL Certificates Healthy"
+          label="SSL healthy"
           value={`${sslHealthyCount} / ${domains.length}`}
-          change="Auto-renewed (TLS 1.3)"
+          change="+2%"
           icon={<ShieldCheck className="w-4 h-4" />}
-          iconBgColor="bg-[#EAF6E7]"
-          iconColor="text-[#2E9B4B]"
         />
         <StatCard
-          label="Pending DNS Propagation"
+          label="Pending DNS"
           value={pendingCount.toString()}
-          change={pendingCount > 0 ? 'Awaiting CNAME records' : 'All resolved'}
+          change={pendingCount > 0 ? '+1%' : '0%'}
+          isPositive={pendingCount === 0}
           icon={<Clock className="w-4 h-4" />}
-          iconBgColor={pendingCount > 0 ? 'bg-[#FEF7EC]' : 'bg-[#F2F4F7]'}
-          iconColor={pendingCount > 0 ? 'text-[#D99A18]' : 'text-[#667085]'}
         />
         <StatCard
-          label="Global Edge Latency"
-          value="28 ms"
-          change="Anycast CDN Cluster"
+          label="Config errors"
+          value={errorCount.toString()}
+          change={errorCount > 0 ? '-1%' : '0%'}
+          isPositive={errorCount === 0}
           icon={<Zap className="w-4 h-4" />}
-          iconBgColor="bg-[#F0FDF4]"
-          iconColor="text-[#2E9B4B]"
         />
       </div>
 
