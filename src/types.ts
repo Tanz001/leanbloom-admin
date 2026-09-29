@@ -14,6 +14,7 @@ export type PageView =
   | 'notifications'
   | 'users-roles'
   | 'settings'
+  | 'profile'
   | 'signin'
   | 'signup';
 

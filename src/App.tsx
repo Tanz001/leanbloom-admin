@@ -28,7 +28,6 @@ import {
   INITIAL_PAYMENTS,
   INITIAL_NOTIFICATIONS,
   INITIAL_USERS,
-  INITIAL_DOMAINS
 } from './mockData';
 // Affiliate mock data removed — portal loads from /api/affiliate/*
 
@@ -45,6 +44,7 @@ import { ProductsPricingView } from './components/views/ProductsPricingView';
 import { CommissionsPaymentsView } from './components/views/CommissionsPaymentsView';
 import { ReportsView } from './components/views/ReportsView';
 import { SystemView } from './components/views/SystemView';
+import { AdminProfileView } from './components/views/AdminProfileView';
 
 // Auth Views
 import { SignInView } from './components/auth/SignInView';
@@ -231,7 +231,7 @@ export default function App() {
   const [payments, setPayments] = useState<PaymentTransaction[]>(INITIAL_PAYMENTS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>(INITIAL_USERS);
-  const [domains, setDomains] = useState<DomainItem[]>(INITIAL_DOMAINS);
+  const [domains, setDomains] = useState<DomainItem[]>([]);
   const [brandingSelectedAffiliateId, setBrandingSelectedAffiliateId] = useState<
     string | undefined
   >(undefined);
@@ -294,13 +294,15 @@ export default function App() {
       setCatalogLoading(true);
       setCatalogError(null);
       try {
-        const [affRes, prodRes] = await Promise.all([
+        const [affRes, prodRes, domainRes] = await Promise.all([
           adminApi.listAffiliates(),
           adminApi.listProducts(),
+          adminApi.listDomains(),
         ]);
         if (cancelled) return;
         setAffiliates(affRes.affiliates as Affiliate[]);
         setProducts(prodRes.products as Product[]);
+        setDomains(domainRes.domains as DomainItem[]);
       } catch (err) {
         if (!cancelled) {
           setCatalogError(
@@ -456,6 +458,10 @@ export default function App() {
 
   const handleUpdateProfile = (updated: Partial<AffiliateProfile>) => {
     setCurrentAffiliateProfile((prev) => ({ ...prev, ...updated }));
+  };
+
+  const handleAccountUserUpdated = (user: AppUser) => {
+    setCurrentUser(user);
   };
 
   const handleSetAffiliateProductPrice = async (
@@ -745,46 +751,82 @@ export default function App() {
     );
   };
 
-  const handleAddDomain = (newDomain: DomainItem) => {
-    setDomains((prev) => [newDomain, ...prev]);
+  const handleAddDomain = async (payload: {
+    affiliateId: string;
+    domain: string;
+    type?: 'Custom Domain' | 'Platform Subdomain';
+    target?: string;
+    isPrimary?: boolean;
+  }) => {
+    const { domain } = await adminApi.createDomain(payload);
+    setDomains((prev) => [domain as DomainItem, ...prev]);
   };
 
-  const handleTogglePrimaryDomain = (domainId: string) => {
-    const targetDomain = domains.find((d) => d.id === domainId);
-    if (!targetDomain) return;
+  const handleTogglePrimaryDomain = async (domainId: string) => {
+    const { domain } = await adminApi.updateDomain(domainId, {
+      isPrimary: true,
+    });
     setDomains((prev) =>
       prev.map((d) =>
-        d.affiliateId === targetDomain.affiliateId
-          ? { ...d, primary: d.id === domainId }
-          : d
-      )
-    );
-  };
-
-  const handleDeleteDomain = (domainId: string) => {
-    setDomains((prev) => prev.filter((d) => d.id !== domainId));
-  };
-
-  const handleReverifyDomain = (domainId: string) => {
-    setDomains((prev) =>
-      prev.map((d) =>
-        d.id === domainId
+        d.affiliateId === domain.affiliateId
           ? {
               ...d,
-              status: 'Active',
-              sslStatus: 'Valid',
-              sslExpiry: 'Dec 18, 2026',
-              lastVerified: 'Just now',
-              dnsRecords: d.dnsRecords.map((r) => ({ ...r, status: 'Verified' }))
+              primary: d.id === domainId,
+              ...(d.id === domainId ? (domain as DomainItem) : {}),
             }
           : d
       )
     );
   };
 
-  const handleSaveAffiliateBranding = (updatedAffiliate: Affiliate) => {
+  const handleDeleteDomain = async (domainId: string) => {
+    const current = domains.find((d) => d.id === domainId);
+    if (!current) return;
+    if (current.type === 'Platform Subdomain') {
+      window.alert('Platform subdomains cannot be deleted.');
+      return;
+    }
+    const ok = window.confirm(`Delete domain “${current.domain}”?`);
+    if (!ok) return;
+    try {
+      await adminApi.deleteDomain(domainId);
+      setDomains((prev) => prev.filter((d) => d.id !== domainId));
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Failed to delete domain');
+    }
+  };
+
+  const handleReverifyDomain = async (domainId: string) => {
+    try {
+      const { domain } = await adminApi.verifyDomain(domainId);
+      setDomains((prev) =>
+        prev.map((d) => (d.id === domainId ? (domain as DomainItem) : d))
+      );
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Failed to verify domain');
+    }
+  };
+
+  const handleSaveAffiliateBranding = async (updatedAffiliate: Affiliate) => {
+    const { affiliate } = await adminApi.updateAffiliate(updatedAffiliate.id, {
+      name: updatedAffiliate.name,
+      primaryColor: updatedAffiliate.primaryColor,
+      secondaryColor: updatedAffiliate.secondaryColor,
+      portalTitle: updatedAffiliate.portalTitle,
+      tagline: updatedAffiliate.tagline,
+      welcomeMessage: updatedAffiliate.welcomeMessage,
+      supportEmail: updatedAffiliate.supportEmail,
+      supportPhone: updatedAffiliate.supportPhone,
+      hidePoweredBy: updatedAffiliate.hidePoweredBy,
+      fontFamily: updatedAffiliate.fontFamily,
+      borderRadius: updatedAffiliate.borderRadius,
+      headerTheme: updatedAffiliate.headerTheme,
+      logoUrl: updatedAffiliate.logoUrl,
+    });
     setAffiliates((prev) =>
-      prev.map((a) => (a.id === updatedAffiliate.id ? updatedAffiliate : a))
+      prev.map((a) =>
+        a.id === updatedAffiliate.id ? (affiliate as Affiliate) : a
+      )
     );
   };
 
@@ -949,7 +991,9 @@ export default function App() {
         {currentAffiliateRoute === 'settings' && (
           <AffiliateSettingsView
             affiliateProfile={currentAffiliateProfile}
+            accountUser={currentUser}
             onUpdateProfile={handleUpdateProfile}
+            onAccountUpdated={handleAccountUserUpdated}
           />
         )}
 
@@ -1177,6 +1221,13 @@ export default function App() {
             )}
 
             {/* 8. SYSTEM */}
+            {currentView === 'profile' && (
+              <AdminProfileView
+                currentUser={currentUser}
+                onUserUpdated={handleAccountUserUpdated}
+              />
+            )}
+
             {(currentView === 'settings' ||
               currentView === 'notifications' ||
               currentView === 'users-roles') && (

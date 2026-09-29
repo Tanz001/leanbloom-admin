@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Globe, AlertCircle, HelpCircle } from 'lucide-react';
-import { Affiliate, DomainItem, DNSRecord } from '../../types';
+import { Globe, AlertCircle } from 'lucide-react';
+import { Affiliate } from '../../types';
 import {
   ModalShell,
   ModalSelect,
@@ -15,7 +15,13 @@ interface AddDomainModalProps {
   isOpen: boolean;
   affiliates: Affiliate[];
   onClose: () => void;
-  onAddDomain: (newDomain: DomainItem) => void;
+  onAddDomain: (payload: {
+    affiliateId: string;
+    domain: string;
+    type?: 'Custom Domain' | 'Platform Subdomain';
+    target?: string;
+    isPrimary?: boolean;
+  }) => Promise<void> | void;
 }
 
 export const AddDomainModal: React.FC<AddDomainModalProps> = ({
@@ -33,8 +39,9 @@ export const AddDomainModal: React.FC<AddDomainModalProps> = ({
     'cname.leanbloom-network.com'
   );
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -59,50 +66,26 @@ export const AddDomainModal: React.FC<AddDomainModalProps> = ({
       return;
     }
 
-    const parts = cleanDomain.split('.');
-    const host = parts.length > 2 ? parts[0] : '@';
-    const challengeToken = `lb-auth-${affiliate.slug.substring(0, 4)}-${Math.floor(10000000 + Math.random() * 90000000)}-verify`;
-
-    const dnsRecords: DNSRecord[] = [
-      {
-        type: 'CNAME',
-        host,
-        value: routingTarget,
-        status: 'Pending',
-        ttl: 'Auto / 300s',
-      },
-      {
-        type: 'TXT',
-        host:
-          host === '@'
-            ? '_leanbloom-challenge'
-            : `_leanbloom-challenge.${host}`,
-        value: challengeToken,
-        status: 'Pending',
-        ttl: '3600s',
-      },
-    ];
-
-    onAddDomain({
-      id: `dom-${Date.now()}`,
-      affiliateId: affiliate.id,
-      affiliateName: affiliate.name,
-      domain: cleanDomain,
-      type: cleanDomain.includes('leanbloom.com')
-        ? 'Platform Subdomain'
-        : 'Custom Domain',
-      target: routingTarget,
-      status: 'Pending DNS',
-      sslStatus: 'Issuing',
-      sslExpiry: 'Pending Verification',
-      dnsRecords,
-      primary: isPrimary,
-      hstsEnabled: true,
-      createdAt: 'Just now',
-      lastVerified: 'Awaiting DNS setup',
-      edgeLatencyMs: 45,
-    });
-    onClose();
+    setSaving(true);
+    try {
+      await onAddDomain({
+        affiliateId: affiliate.id,
+        domain: cleanDomain,
+        type:
+          cleanDomain.includes('leanbloom.com') ||
+          cleanDomain.includes('leanbloom.health')
+            ? 'Platform Subdomain'
+            : 'Custom Domain',
+        target: routingTarget,
+        isPrimary,
+      });
+      setDomainInput('');
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add domain');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -181,20 +164,12 @@ export const AddDomainModal: React.FC<AddDomainModalProps> = ({
           </span>
         </label>
 
-        <div className="p-3.5 bg-[#EAF4FB]/60 rounded-xl border border-[#2D82C4]/15 flex items-start gap-2.5 text-sm text-[#12345F]">
-          <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#2D82C4]" />
-          <p className="leading-relaxed text-[#5B6B7C]">
-            DNS records and an ownership check are generated next. SSL issues
-            after DNS propagates.
-          </p>
-        </div>
-
-        <div className="pt-2 border-t border-[#E4EAF0] flex items-center justify-end gap-2.5">
+        <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className={modalBtnSecondary}>
             Cancel
           </button>
-          <button type="submit" className={modalBtnPrimary}>
-            Add domain
+          <button type="submit" disabled={saving} className={modalBtnPrimary}>
+            {saving ? 'Adding…' : 'Add domain'}
           </button>
         </div>
       </form>

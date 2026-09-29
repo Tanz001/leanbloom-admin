@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    onNavigate('users-roles');
+                    onNavigate('profile');
                     setProfileOpen(false);
                   }}
                   className="w-full text-left px-3.5 py-2.5 text-sm text-[#4B5563] hover:bg-[#F9FAFB] flex items-center gap-2.5"

@@ -29,10 +29,16 @@ import { AddDomainModal } from '../modals/AddDomainModal';
 interface DomainsViewProps {
   domains: DomainItem[];
   affiliates: Affiliate[];
-  onAddDomain: (newDomain: DomainItem) => void;
-  onTogglePrimaryDomain: (domainId: string) => void;
-  onDeleteDomain: (domainId: string) => void;
-  onReverifyDomain: (domainId: string) => void;
+  onAddDomain: (payload: {
+    affiliateId: string;
+    domain: string;
+    type?: 'Custom Domain' | 'Platform Subdomain';
+    target?: string;
+    isPrimary?: boolean;
+  }) => Promise<void> | void;
+  onTogglePrimaryDomain: (domainId: string) => Promise<void> | void;
+  onDeleteDomain: (domainId: string) => Promise<void> | void;
+  onReverifyDomain: (domainId: string) => Promise<void> | void;
   onNavigateToAffiliate?: (affiliateId: string) => void;
 }
 
@@ -76,13 +82,16 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
     setTimeout(() => setCopiedDomain(null), 2000);
   };
 
-  const handleBulkCheck = () => {
+  const handleBulkCheck = async () => {
     setIsBulkChecking(true);
-    setTimeout(() => {
-      setIsBulkChecking(false);
+    try {
+      const pending = domains.filter((d) => d.status !== 'Active');
+      await Promise.all(pending.map((d) => onReverifyDomain(d.id)));
       setBulkCheckBanner(true);
       setTimeout(() => setBulkCheckBanner(false), 4000);
-    }, 1500);
+    } finally {
+      setIsBulkChecking(false);
+    }
   };
 
   return (

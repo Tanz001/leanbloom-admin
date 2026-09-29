@@ -92,6 +92,24 @@ export const authApi = {
   me() {
     return request<{ user: ApiAuthUser }>('/api/auth/me', { method: 'GET' }, true);
   },
+
+  updateProfile(name: string) {
+    return request<LoginResponse>('/api/auth/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    }, true);
+  },
+
+  changePassword(currentPassword: string, newPassword: string) {
+    return request<{ message: string }>(
+      '/api/auth/change-password',
+      {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      },
+      true
+    );
+  },
 };
 
 export type ApiAffiliate = {
@@ -119,6 +137,9 @@ export type ApiAffiliate = {
   hidePoweredBy?: boolean;
   trustBadgeText?: string;
   clinicalPartnerNote?: string;
+  fontFamily?: string;
+  borderRadius?: string;
+  headerTheme?: string;
   patientsCount: number;
   ordersCount: number;
   revenue: number;
@@ -145,6 +166,30 @@ export type ApiProduct = {
   ordersCount: number;
 };
 
+export type DomainItemDto = {
+  id: string;
+  affiliateId: string;
+  affiliateName: string;
+  domain: string;
+  type: 'Custom Domain' | 'Platform Subdomain';
+  target: string;
+  status: 'Active' | 'Pending DNS' | 'SSL Generating' | 'Configuration Error';
+  sslStatus: 'Valid' | 'Issuing' | 'Expiring Soon' | 'Failed';
+  sslExpiry: string;
+  dnsRecords: {
+    type: 'CNAME' | 'A' | 'TXT';
+    host: string;
+    value: string;
+    status: 'Verified' | 'Pending' | 'Error';
+    ttl: string;
+  }[];
+  primary: boolean;
+  hstsEnabled: boolean;
+  createdAt: string;
+  lastVerified: string;
+  edgeLatencyMs?: number;
+};
+
 export type CreateAffiliatePayload = {
   name: string;
   slug?: string;
@@ -157,6 +202,7 @@ export type CreateAffiliatePayload = {
   commissionRate?: number;
   primaryColor?: string;
   secondaryColor?: string;
+  logoUrl?: string | null;
   portalTitle?: string;
   tagline?: string;
   welcomeMessage?: string;
@@ -167,6 +213,9 @@ export type CreateAffiliatePayload = {
   trustBadgeText?: string;
   clinicalPartnerNote?: string;
   customDomain?: string;
+  fontFamily?: string;
+  borderRadius?: string;
+  headerTheme?: string;
   ownerPassword: string;
 };
 
@@ -270,6 +319,55 @@ export const adminApi = {
   deleteAffiliate(id: string) {
     return request<{ message: string }>(
       `/api/admin/affiliates/${id}`,
+      { method: 'DELETE' },
+      true
+    );
+  },
+
+  listDomains() {
+    return request<{ domains: DomainItemDto[] }>(
+      '/api/admin/domains',
+      { method: 'GET' },
+      true
+    );
+  },
+
+  createDomain(payload: {
+    affiliateId: string;
+    domain: string;
+    type?: 'Custom Domain' | 'Platform Subdomain';
+    target?: string;
+    isPrimary?: boolean;
+  }) {
+    return request<{ message: string; domain: DomainItemDto }>(
+      '/api/admin/domains',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  updateDomain(
+    id: string,
+    payload: { isPrimary?: boolean; status?: string; hstsEnabled?: boolean }
+  ) {
+    return request<{ message: string; domain: DomainItemDto }>(
+      `/api/admin/domains/${id}`,
+      { method: 'PATCH', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  verifyDomain(id: string) {
+    return request<{ message: string; domain: DomainItemDto }>(
+      `/api/admin/domains/${id}/verify`,
+      { method: 'POST' },
+      true
+    );
+  },
+
+  deleteDomain(id: string) {
+    return request<{ message: string }>(
+      `/api/admin/domains/${id}`,
       { method: 'DELETE' },
       true
     );
@@ -489,7 +587,7 @@ export const affiliateApi = {
 export function mapApiUserToAppRole(user: ApiAuthUser): AppUser {
   if (user.portal === 'affiliate') {
     return {
-      name: user.affiliateName || user.name,
+      name: user.name,
       email: user.email,
       role: 'Affiliate',
       affiliateId: user.affiliateId,

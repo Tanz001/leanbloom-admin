@@ -32,7 +32,7 @@ import { PageHeader } from '../common/PageHeader';
 interface BrandingViewProps {
   affiliates: Affiliate[];
   products: Product[];
-  onSaveAffiliateBranding: (updatedAffiliate: Affiliate) => void;
+  onSaveAffiliateBranding: (updatedAffiliate: Affiliate) => Promise<void> | void;
   selectedAffiliateId?: string;
 }
 
@@ -95,6 +95,8 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
   const [activeTab, setActiveTab] = useState<'Identity' | 'Theme' | 'Portal' | 'CSS'>('Identity');
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [copiedConfig, setCopiedConfig] = useState(false);
 
   // Sync form when active affiliate changes
@@ -125,7 +127,7 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
   }
 
   // Handle Save
-  const handleSave = () => {
+  const handleSave = async () => {
     const updated: Affiliate = {
       ...activeAffiliate,
       name,
@@ -143,9 +145,17 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
       logoUrl: customLogoUrl || undefined
     };
 
-    onSaveAffiliateBranding(updated);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await onSaveAffiliateBranding(updated);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save branding');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Handle Reset to Default
@@ -647,19 +657,25 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
+              {saveError && (
+                <span className="text-xs font-semibold text-red-600 max-w-[220px] truncate">
+                  {saveError}
+                </span>
+              )}
               {savedSuccess && (
                 <span className="text-xs font-semibold text-[#2E9B4B] flex items-center gap-1 animate-in fade-in">
-                  <Check className="w-4 h-4" /> Published to Edge!
+                  <Check className="w-4 h-4" /> Branding saved
                 </span>
               )}
 
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-5 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                disabled={saving}
+                className="px-5 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-60"
               >
                 <Save className="w-4 h-4" />
-                <span>Save & Publish Changes</span>
+                <span>{saving ? 'Saving…' : 'Save & Publish Changes'}</span>
               </button>
             </div>
           </div>
