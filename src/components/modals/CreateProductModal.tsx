@@ -36,6 +36,7 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
   const [basePrice, setBasePrice] = useState(199);
   const [minimumPrice, setMinimumPrice] = useState(249);
   const [description, setDescription] = useState('');
+  const [buyUrl, setBuyUrl] = useState('');
   const [stockStatus, setStockStatus] =
     useState<Product['stockStatus']>('In Stock');
   const [status, setStatus] = useState<Product['status']>('Active');
@@ -60,6 +61,7 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     setBasePrice(199);
     setMinimumPrice(249);
     setDescription('');
+    setBuyUrl('');
     setStockStatus('In Stock');
     setStatus('Active');
     setImageFile(null);
@@ -87,6 +89,7 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
           basePrice: Number(basePrice),
           minimumPrice: Number(minimumPrice),
           description,
+          buyUrl: buyUrl.trim() || null,
           stockStatus,
           status,
         },
@@ -244,6 +247,20 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
             placeholder="Short clinical or catalog description…"
             className={`${modalInputClass} resize-none`}
           />
+        </div>
+
+        <div>
+          <label className={modalLabelClass}>Buy / checkout link</label>
+          <input
+            type="url"
+            value={buyUrl}
+            onChange={(e) => setBuyUrl(e.target.value)}
+            placeholder="https://… (opens from storefront Get started)"
+            className={modalInputClass}
+          />
+          <p className={modalHintClass}>
+            When patients click Buy on the storefront product page, this URL opens.
+          </p>
         </div>
 
         <div>

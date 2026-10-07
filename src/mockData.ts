@@ -3,7 +3,6 @@ import {
   Patient,
   Order,
   Product,
-  AffiliatePriceRule,
   CommissionRecord,
   PaymentTransaction,
   AuditLog,
@@ -303,57 +302,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     status: 'Active',
     description: 'Custom topical compound of Minoxidil, Finasteride, and Tretinoin foam delivery.',
     stockStatus: 'In Stock'
-  }
-];
-
-export const INITIAL_PRICING_RULES: AffiliatePriceRule[] = [
-  {
-    productId: 'prod-01',
-    productName: 'Weight Management (GLP-1 Dual Agonist)',
-    basePrice: 299,
-    minimumPrice: 299,
-    activeAffiliates: 84,
-    affiliatePriceExamples: [
-      { affiliateName: 'ABC Wellness', sellingPrice: 349 },
-      { affiliateName: 'XYZ Health', sellingPrice: 399 },
-      { affiliateName: 'HealthPlus Direct', sellingPrice: 329 },
-      { affiliateName: 'Peak Vitality', sellingPrice: 369 }
-    ]
-  },
-  {
-    productId: 'prod-02',
-    productName: 'Metabolic Health Baseline & Labs',
-    basePrice: 189,
-    minimumPrice: 199,
-    activeAffiliates: 62,
-    affiliatePriceExamples: [
-      { affiliateName: 'ABC Wellness', sellingPrice: 229 },
-      { affiliateName: 'XYZ Health', sellingPrice: 249 },
-      { affiliateName: 'NuLife Regenerative', sellingPrice: 219 }
-    ]
-  },
-  {
-    productId: 'prod-03',
-    productName: 'Hormone Optimization Therapy (TRT/HRT)',
-    basePrice: 220,
-    minimumPrice: 249,
-    activeAffiliates: 51,
-    affiliatePriceExamples: [
-      { affiliateName: 'Peak Vitality', sellingPrice: 289 },
-      { affiliateName: 'ABC Wellness', sellingPrice: 279 },
-      { affiliateName: 'XYZ Health', sellingPrice: 299 }
-    ]
-  },
-  {
-    productId: 'prod-04',
-    productName: 'Longevity NAD+ Cellular Protocol',
-    basePrice: 165,
-    minimumPrice: 185,
-    activeAffiliates: 44,
-    affiliatePriceExamples: [
-      { affiliateName: 'NuLife Regenerative', sellingPrice: 210 },
-      { affiliateName: 'Peak Vitality', sellingPrice: 225 }
-    ]
   }
 ];
 

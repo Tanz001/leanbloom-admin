@@ -7,6 +7,7 @@ import {
   saveAuthSession,
   type AppUser,
 } from '../../lib/api';
+import { useToast } from '../ui/Toast';
 
 interface AdminProfileViewProps {
   currentUser: AppUser;
@@ -17,6 +18,7 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
   currentUser,
   onUserUpdated,
 }) => {
+  const toast = useToast();
   const [name, setName] = useState(currentUser.name);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -51,9 +53,12 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
       saveAuthSession(result.token, mapped);
       onUserUpdated(mapped);
       setProfileMsg('Profile updated');
+      toast.success('Profile updated');
       setTimeout(() => setProfileMsg(null), 2500);
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : 'Failed to update profile');
+      const msg = err instanceof Error ? err.message : 'Failed to update profile';
+      setProfileError(msg);
+      toast.error(msg);
     } finally {
       setProfileSaving(false);
     }
@@ -80,11 +85,13 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
       setNewPassword('');
       setConfirmPassword('');
       setPasswordMsg('Password updated successfully');
+      toast.success('Password updated');
       setTimeout(() => setPasswordMsg(null), 2500);
     } catch (err) {
-      setPasswordError(
-        err instanceof Error ? err.message : 'Failed to change password'
-      );
+      const msg =
+        err instanceof Error ? err.message : 'Failed to change password';
+      setPasswordError(msg);
+      toast.error(msg);
     } finally {
       setPasswordSaving(false);
     }

@@ -158,6 +158,7 @@ export type ApiProduct = {
     | 'Wellness Pack';
   description: string;
   imageUrl?: string | null;
+  buyUrl?: string | null;
   basePrice: number;
   minimumPrice: number;
   status: 'Active' | 'Draft' | 'Archived';
@@ -223,6 +224,7 @@ export type CreateProductPayload = {
   name: string;
   category: ApiProduct['category'];
   description?: string;
+  buyUrl?: string | null;
   basePrice: number;
   minimumPrice: number;
   status?: ApiProduct['status'];
@@ -382,12 +384,32 @@ export const adminApi = {
     );
   },
 
+  listPricing() {
+    return request<{
+      pricing: {
+        productId: string;
+        productName: string;
+        basePrice: number;
+        minimumPrice: number;
+        activeAffiliates: number;
+        affiliatePrices: {
+          affiliateId: string;
+          affiliateName: string;
+          sellingPrice: number;
+        }[];
+      }[];
+    }>('/api/admin/pricing', { method: 'GET' }, true);
+  },
+
   createProduct(payload: CreateProductPayload, imageFile?: File | null) {
     const form = new FormData();
     form.append('name', payload.name);
     form.append('category', payload.category);
     if (payload.description != null) {
       form.append('description', payload.description);
+    }
+    if (payload.buyUrl != null) {
+      form.append('buyUrl', payload.buyUrl);
     }
     form.append('basePrice', String(payload.basePrice));
     form.append('minimumPrice', String(payload.minimumPrice));

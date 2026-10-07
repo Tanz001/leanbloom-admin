@@ -23,7 +23,6 @@ import {
 import {
   INITIAL_ORDERS,
   INITIAL_PATIENTS,
-  INITIAL_PRICING_RULES,
   INITIAL_COMMISSIONS,
   INITIAL_PAYMENTS,
   INITIAL_NOTIFICATIONS,
@@ -56,6 +55,11 @@ import { EditAffiliateModal } from './components/modals/EditAffiliateModal';
 import { EditPricingModal } from './components/modals/EditPricingModal';
 import { CreateProductModal } from './components/modals/CreateProductModal';
 import { EditProductModal } from './components/modals/EditProductModal';
+import {
+  ConfirmModal,
+  type ConfirmIntent,
+} from './components/modals/ConfirmModal';
+import { useToast } from './components/ui/Toast';
 
 // Affiliate Dashboard Layout & Views
 import { AffiliateLayout } from './components/affiliate/AffiliateLayout';
@@ -151,6 +155,7 @@ function mapPortalProfile(p: AffiliatePortalProfile): AffiliateProfile {
 }
 
 export default function App() {
+  const toast = useToast();
   const storedUser = getStoredUser();
   const hasToken = Boolean(getAuthToken());
 
@@ -226,7 +231,7 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [pricingRules] = useState<AffiliatePriceRule[]>(INITIAL_PRICING_RULES);
+  const [pricingRules, setPricingRules] = useState<AffiliatePriceRule[]>([]);
   const [commissions] = useState<CommissionRecord[]>(INITIAL_COMMISSIONS);
   const [payments, setPayments] = useState<PaymentTransaction[]>(INITIAL_PAYMENTS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
@@ -243,6 +248,7 @@ export default function App() {
   const [isCreateProductOpen, setIsCreateProductOpen] = useState(false);
   const [editProductTarget, setEditProductTarget] = useState<Product | null>(null);
   const [editPricingProduct, setEditPricingProduct] = useState<Product | null>(null);
+  const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
 
   // =========================================================================
   // AUTH — restore session from localStorage on refresh
@@ -294,15 +300,17 @@ export default function App() {
       setCatalogLoading(true);
       setCatalogError(null);
       try {
-        const [affRes, prodRes, domainRes] = await Promise.all([
+        const [affRes, prodRes, domainRes, pricingRes] = await Promise.all([
           adminApi.listAffiliates(),
           adminApi.listProducts(),
           adminApi.listDomains(),
+          adminApi.listPricing(),
         ]);
         if (cancelled) return;
         setAffiliates(affRes.affiliates as Affiliate[]);
         setProducts(prodRes.products as Product[]);
         setDomains(domainRes.domains as DomainItem[]);
+        setPricingRules(pricingRes.pricing as AffiliatePriceRule[]);
       } catch (err) {
         if (!cancelled) {
           setCatalogError(
@@ -319,6 +327,30 @@ export default function App() {
       cancelled = true;
     };
   }, [authReady, isAuthenticated, currentUser.role]);
+
+  // Refresh live affiliate prices whenever Pricing is opened
+  useEffect(() => {
+    if (
+      !authReady ||
+      !isAuthenticated ||
+      currentUser.role === 'Affiliate' ||
+      (currentView !== 'pricing' && currentView !== 'products')
+    ) {
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { pricing } = await adminApi.listPricing();
+        if (!cancelled) setPricingRules(pricing as AffiliatePriceRule[]);
+      } catch {
+        /* keep existing */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, isAuthenticated, currentUser.role, currentView]);
 
   // Load affiliate portal data when logged in as affiliate
   useEffect(() => {
@@ -451,8 +483,9 @@ export default function App() {
         ...prev,
       ]);
       setIsAddPatientModalOpen(false);
+      toast.success('Customer added');
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to add customer');
+      toast.error(err instanceof Error ? err.message : 'Failed to add customer');
     }
   };
 
@@ -468,13 +501,19 @@ export default function App() {
     productId: string,
     sellingPrice: number
   ) => {
-    const { product } = await affiliateApi.setProductPrice(
-      productId,
-      sellingPrice
-    );
-    setAffiliateProducts((prev) =>
-      prev.map((p) => (p.id === productId ? product : p))
-    );
+    try {
+      const { product } = await affiliateApi.setProductPrice(
+        productId,
+        sellingPrice
+      );
+      setAffiliateProducts((prev) =>
+        prev.map((p) => (p.id === productId ? product : p))
+      );
+      toast.success('Product price updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update price');
+      throw err;
+    }
   };
 
   const refreshAffiliateProducts = async () => {
@@ -505,6 +544,15 @@ export default function App() {
     };
   }, [currentAffiliateRoute, currentUser.role, isAuthenticated]);
 
+  const refreshPricingRules = async () => {
+    try {
+      const { pricing } = await adminApi.listPricing();
+      setPricingRules(pricing as AffiliatePriceRule[]);
+    } catch {
+      /* keep existing */
+    }
+  };
+
   // =========================================================================
   // MASTER ADMIN HANDLERS
   // =========================================================================
@@ -522,34 +570,40 @@ export default function App() {
         ? newAffData.domain
         : undefined;
 
-    const result = await adminApi.createAffiliate(
-      {
-        name: newAffData.name,
-        slug: newAffData.slug,
-        contactName: newAffData.contactName,
-        contactEmail: newAffData.contactEmail,
-        contactPhone: newAffData.contactPhone,
-        address: newAffData.address,
-        status: newAffData.status,
-        defaultMarkup: newAffData.defaultMarkup,
-        primaryColor: newAffData.primaryColor,
-        secondaryColor: newAffData.secondaryColor,
-        portalTitle: newAffData.portalTitle,
-        tagline: newAffData.tagline,
-        welcomeMessage: newAffData.welcomeMessage,
-        supportEmail: newAffData.supportEmail,
-        supportPhone: newAffData.supportPhone,
-        businessHours: newAffData.businessHours,
-        hidePoweredBy: newAffData.hidePoweredBy,
-        trustBadgeText: newAffData.trustBadgeText,
-        clinicalPartnerNote: newAffData.clinicalPartnerNote,
-        customDomain,
-        ownerPassword: newAffData.ownerPassword,
-      },
-      logoFile
-    );
-    setAffiliates((prev) => [result.affiliate as Affiliate, ...prev]);
-    setIsCreateAffiliateOpen(false);
+    try {
+      const result = await adminApi.createAffiliate(
+        {
+          name: newAffData.name,
+          slug: newAffData.slug,
+          contactName: newAffData.contactName,
+          contactEmail: newAffData.contactEmail,
+          contactPhone: newAffData.contactPhone,
+          address: newAffData.address,
+          status: newAffData.status,
+          defaultMarkup: newAffData.defaultMarkup,
+          primaryColor: newAffData.primaryColor,
+          secondaryColor: newAffData.secondaryColor,
+          portalTitle: newAffData.portalTitle,
+          tagline: newAffData.tagline,
+          welcomeMessage: newAffData.welcomeMessage,
+          supportEmail: newAffData.supportEmail,
+          supportPhone: newAffData.supportPhone,
+          businessHours: newAffData.businessHours,
+          hidePoweredBy: newAffData.hidePoweredBy,
+          trustBadgeText: newAffData.trustBadgeText,
+          clinicalPartnerNote: newAffData.clinicalPartnerNote,
+          customDomain,
+          ownerPassword: newAffData.ownerPassword,
+        },
+        logoFile
+      );
+      setAffiliates((prev) => [result.affiliate as Affiliate, ...prev]);
+      setIsCreateAffiliateOpen(false);
+      toast.success(`Affiliate “${result.affiliate.name}” created`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create affiliate');
+      throw err;
+    }
   };
 
   const handleUpdateAffiliate = async (
@@ -577,56 +631,70 @@ export default function App() {
     },
     logoFile?: File | null
   ) => {
-    const { affiliate } = await adminApi.updateAffiliate(
-      id,
-      {
-        name: data.name,
-        contactName: data.contactName,
-        contactEmail: data.contactEmail,
-        contactPhone: data.contactPhone,
-        address: data.address,
-        status: data.status,
-        defaultMarkup: data.defaultMarkup,
-        primaryColor: data.primaryColor,
-        secondaryColor: data.secondaryColor,
-        portalTitle: data.portalTitle,
-        tagline: data.tagline,
-        welcomeMessage: data.welcomeMessage,
-        supportEmail: data.supportEmail,
-        supportPhone: data.supportPhone,
-        businessHours: data.businessHours,
-        hidePoweredBy: data.hidePoweredBy,
-        trustBadgeText: data.trustBadgeText,
-        clinicalPartnerNote: data.clinicalPartnerNote,
-        ownerPassword: data.ownerPassword,
-      },
-      logoFile
-    );
-    setAffiliates((prev) =>
-      prev.map((a) => (a.id === id ? (affiliate as Affiliate) : a))
-    );
-    if (selectedAffiliate?.id === id) {
-      setSelectedAffiliate(affiliate as Affiliate);
+    try {
+      const { affiliate } = await adminApi.updateAffiliate(
+        id,
+        {
+          name: data.name,
+          contactName: data.contactName,
+          contactEmail: data.contactEmail,
+          contactPhone: data.contactPhone,
+          address: data.address,
+          status: data.status,
+          defaultMarkup: data.defaultMarkup,
+          primaryColor: data.primaryColor,
+          secondaryColor: data.secondaryColor,
+          portalTitle: data.portalTitle,
+          tagline: data.tagline,
+          welcomeMessage: data.welcomeMessage,
+          supportEmail: data.supportEmail,
+          supportPhone: data.supportPhone,
+          businessHours: data.businessHours,
+          hidePoweredBy: data.hidePoweredBy,
+          trustBadgeText: data.trustBadgeText,
+          clinicalPartnerNote: data.clinicalPartnerNote,
+          ownerPassword: data.ownerPassword,
+        },
+        logoFile
+      );
+      setAffiliates((prev) =>
+        prev.map((a) => (a.id === id ? (affiliate as Affiliate) : a))
+      );
+      if (selectedAffiliate?.id === id) {
+        setSelectedAffiliate(affiliate as Affiliate);
+      }
+      setEditAffiliateTarget(null);
+      toast.success('Affiliate updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update affiliate');
+      throw err;
     }
-    setEditAffiliateTarget(null);
   };
 
-  const handleDeleteAffiliate = async (affId: string) => {
+  const handleDeleteAffiliate = (affId: string) => {
     const current = affiliates.find((a) => a.id === affId);
     if (!current) return;
-    const ok = window.confirm(
-      `Delete “${current.name}”? This cannot be undone if the affiliate has no patients or orders.`
-    );
-    if (!ok) return;
-    try {
-      await adminApi.deleteAffiliate(affId);
-      setAffiliates((prev) => prev.filter((a) => a.id !== affId));
-      if (selectedAffiliate?.id === affId) {
-        setSelectedAffiliate(null);
-      }
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to delete affiliate');
-    }
+    setConfirmIntent({
+      title: 'Delete affiliate?',
+      description:
+        'This permanently removes the clinic from LeanBloom. Related data will be wiped.',
+      entityName: current.name,
+      confirmLabel: 'Delete affiliate',
+      consequences: [
+        'Affiliate account and owner login',
+        'Domains and branding',
+        'Patients, orders, commissions, and payments',
+      ],
+      onConfirm: async () => {
+        await adminApi.deleteAffiliate(affId);
+        setAffiliates((prev) => prev.filter((a) => a.id !== affId));
+        setDomains((prev) => prev.filter((d) => d.affiliateId !== affId));
+        if (selectedAffiliate?.id === affId) {
+          setSelectedAffiliate(null);
+        }
+        toast.success(`Affiliate “${current.name}” deleted`);
+      },
+    });
   };
 
   const handleToggleAffiliateStatus = async (affId: string) => {
@@ -640,8 +708,13 @@ export default function App() {
       setAffiliates((prev) =>
         prev.map((a) => (a.id === affId ? (affiliate as Affiliate) : a))
       );
+      toast.success(
+        nextStatus === 'Active'
+          ? 'Affiliate activated'
+          : 'Affiliate suspended'
+      );
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to update affiliate');
+      toast.error(err instanceof Error ? err.message : 'Failed to update affiliate');
     }
   };
 
@@ -649,20 +722,28 @@ export default function App() {
     newProdData: Omit<Product, 'id' | 'activeAffiliatesCount' | 'ordersCount' | 'imageUrl'>,
     imageFile?: File | null
   ) => {
-    const { product } = await adminApi.createProduct(
-      {
-        name: newProdData.name,
-        category: newProdData.category,
-        description: newProdData.description,
-        basePrice: newProdData.basePrice,
-        minimumPrice: newProdData.minimumPrice,
-        status: newProdData.status,
-        stockStatus: newProdData.stockStatus,
-      },
-      imageFile
-    );
-    setProducts((prev) => [product as Product, ...prev]);
-    setIsCreateProductOpen(false);
+    try {
+      const { product } = await adminApi.createProduct(
+        {
+          name: newProdData.name,
+          category: newProdData.category,
+          description: newProdData.description,
+          buyUrl: newProdData.buyUrl,
+          basePrice: newProdData.basePrice,
+          minimumPrice: newProdData.minimumPrice,
+          status: newProdData.status,
+          stockStatus: newProdData.stockStatus,
+        },
+        imageFile
+      );
+      setProducts((prev) => [product as Product, ...prev]);
+      setIsCreateProductOpen(false);
+      await refreshPricingRules();
+      toast.success(`Product “${product.name}” created`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create product');
+      throw err;
+    }
   };
 
   const handleUpdateProduct = async (
@@ -670,38 +751,53 @@ export default function App() {
     data: Omit<Product, 'id' | 'activeAffiliatesCount' | 'ordersCount' | 'imageUrl'>,
     imageFile?: File | null
   ) => {
-    const { product } = await adminApi.updateProduct(
-      productId,
-      {
-        name: data.name,
-        category: data.category,
-        description: data.description,
-        basePrice: data.basePrice,
-        minimumPrice: data.minimumPrice,
-        status: data.status,
-        stockStatus: data.stockStatus,
-      },
-      imageFile
-    );
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? (product as Product) : p))
-    );
-    setEditProductTarget(null);
+    try {
+      const { product } = await adminApi.updateProduct(
+        productId,
+        {
+          name: data.name,
+          category: data.category,
+          description: data.description,
+          buyUrl: data.buyUrl,
+          basePrice: data.basePrice,
+          minimumPrice: data.minimumPrice,
+          status: data.status,
+          stockStatus: data.stockStatus,
+        },
+        imageFile
+      );
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? (product as Product) : p))
+      );
+      setEditProductTarget(null);
+      await refreshPricingRules();
+      toast.success('Product updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update product');
+      throw err;
+    }
   };
 
-  const handleDeleteProduct = async (prodId: string) => {
+  const handleDeleteProduct = (prodId: string) => {
     const current = products.find((p) => p.id === prodId);
     if (!current) return;
-    const ok = window.confirm(
-      `Delete “${current.name}”? This removes it from the catalog and affiliate price rules.`
-    );
-    if (!ok) return;
-    try {
-      await adminApi.deleteProduct(prodId);
-      setProducts((prev) => prev.filter((p) => p.id !== prodId));
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to delete product');
-    }
+    setConfirmIntent({
+      title: 'Delete product?',
+      description:
+        'This removes the product from the master catalog and affiliate price rules.',
+      entityName: current.name,
+      confirmLabel: 'Delete product',
+      consequences: [
+        'Catalog listing for all affiliates',
+        'Custom affiliate selling prices for this SKU',
+      ],
+      onConfirm: async () => {
+        await adminApi.deleteProduct(prodId);
+        setProducts((prev) => prev.filter((p) => p.id !== prodId));
+        setPricingRules((prev) => prev.filter((r) => r.productId !== prodId));
+        toast.success(`Product “${current.name}” deleted`);
+      },
+    });
   };
 
   const handleToggleProductStatus = async (prodId: string) => {
@@ -715,8 +811,11 @@ export default function App() {
       setProducts((prev) =>
         prev.map((p) => (p.id === prodId ? (product as Product) : p))
       );
+      toast.success(
+        nextStatus === 'Active' ? 'Product published' : 'Product set to draft'
+      );
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to update product');
+      toast.error(err instanceof Error ? err.message : 'Failed to update product');
     }
   };
 
@@ -734,8 +833,10 @@ export default function App() {
         prev.map((p) => (p.id === productId ? (product as Product) : p))
       );
       setEditPricingProduct(null);
+      await refreshPricingRules();
+      toast.success('Pricing updated');
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to update pricing');
+      toast.error(err instanceof Error ? err.message : 'Failed to update pricing');
     }
   };
 
@@ -743,12 +844,14 @@ export default function App() {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: 'Refunded' } : o))
     );
+    toast.success('Order marked as refunded');
   };
 
   const handleDisbursePayout = (paymentId: string) => {
     setPayments((prev) =>
       prev.map((p) => (p.id === paymentId ? { ...p, status: 'Paid' } : p))
     );
+    toast.success('Payout marked as paid');
   };
 
   const handleAddDomain = async (payload: {
@@ -758,42 +861,61 @@ export default function App() {
     target?: string;
     isPrimary?: boolean;
   }) => {
-    const { domain } = await adminApi.createDomain(payload);
-    setDomains((prev) => [domain as DomainItem, ...prev]);
+    try {
+      const { domain } = await adminApi.createDomain(payload);
+      setDomains((prev) => [domain as DomainItem, ...prev]);
+      toast.success(`Domain “${domain.domain}” added`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add domain');
+      throw err;
+    }
   };
 
   const handleTogglePrimaryDomain = async (domainId: string) => {
-    const { domain } = await adminApi.updateDomain(domainId, {
-      isPrimary: true,
-    });
-    setDomains((prev) =>
-      prev.map((d) =>
-        d.affiliateId === domain.affiliateId
-          ? {
-              ...d,
-              primary: d.id === domainId,
-              ...(d.id === domainId ? (domain as DomainItem) : {}),
-            }
-          : d
-      )
-    );
+    try {
+      const { domain } = await adminApi.updateDomain(domainId, {
+        isPrimary: true,
+      });
+      setDomains((prev) =>
+        prev.map((d) =>
+          d.affiliateId === domain.affiliateId
+            ? {
+                ...d,
+                primary: d.id === domainId,
+                ...(d.id === domainId ? (domain as DomainItem) : {}),
+              }
+            : d
+        )
+      );
+      toast.success('Primary domain updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update domain');
+    }
   };
 
-  const handleDeleteDomain = async (domainId: string) => {
+  const handleDeleteDomain = (domainId: string) => {
     const current = domains.find((d) => d.id === domainId);
     if (!current) return;
     if (current.type === 'Platform Subdomain') {
-      window.alert('Platform subdomains cannot be deleted.');
+      toast.info('Platform subdomains cannot be deleted');
       return;
     }
-    const ok = window.confirm(`Delete domain “${current.domain}”?`);
-    if (!ok) return;
-    try {
-      await adminApi.deleteDomain(domainId);
-      setDomains((prev) => prev.filter((d) => d.id !== domainId));
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to delete domain');
-    }
+    setConfirmIntent({
+      title: 'Delete domain?',
+      description:
+        'Patients using this hostname will no longer resolve to this affiliate.',
+      entityName: current.domain,
+      confirmLabel: 'Delete domain',
+      consequences: [
+        `Custom domain for ${current.affiliateName}`,
+        'DNS / SSL records tied to this domain',
+      ],
+      onConfirm: async () => {
+        await adminApi.deleteDomain(domainId);
+        setDomains((prev) => prev.filter((d) => d.id !== domainId));
+        toast.success(`Domain “${current.domain}” deleted`);
+      },
+    });
   };
 
   const handleReverifyDomain = async (domainId: string) => {
@@ -802,32 +924,43 @@ export default function App() {
       setDomains((prev) =>
         prev.map((d) => (d.id === domainId ? (domain as DomainItem) : d))
       );
+      toast.success(
+        domain.status === 'Active'
+          ? 'Domain verified'
+          : 'Verification checked — DNS may still be pending'
+      );
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Failed to verify domain');
+      toast.error(err instanceof Error ? err.message : 'Failed to verify domain');
     }
   };
 
   const handleSaveAffiliateBranding = async (updatedAffiliate: Affiliate) => {
-    const { affiliate } = await adminApi.updateAffiliate(updatedAffiliate.id, {
-      name: updatedAffiliate.name,
-      primaryColor: updatedAffiliate.primaryColor,
-      secondaryColor: updatedAffiliate.secondaryColor,
-      portalTitle: updatedAffiliate.portalTitle,
-      tagline: updatedAffiliate.tagline,
-      welcomeMessage: updatedAffiliate.welcomeMessage,
-      supportEmail: updatedAffiliate.supportEmail,
-      supportPhone: updatedAffiliate.supportPhone,
-      hidePoweredBy: updatedAffiliate.hidePoweredBy,
-      fontFamily: updatedAffiliate.fontFamily,
-      borderRadius: updatedAffiliate.borderRadius,
-      headerTheme: updatedAffiliate.headerTheme,
-      logoUrl: updatedAffiliate.logoUrl,
-    });
-    setAffiliates((prev) =>
-      prev.map((a) =>
-        a.id === updatedAffiliate.id ? (affiliate as Affiliate) : a
-      )
-    );
+    try {
+      const { affiliate } = await adminApi.updateAffiliate(updatedAffiliate.id, {
+        name: updatedAffiliate.name,
+        primaryColor: updatedAffiliate.primaryColor,
+        secondaryColor: updatedAffiliate.secondaryColor,
+        portalTitle: updatedAffiliate.portalTitle,
+        tagline: updatedAffiliate.tagline,
+        welcomeMessage: updatedAffiliate.welcomeMessage,
+        supportEmail: updatedAffiliate.supportEmail,
+        supportPhone: updatedAffiliate.supportPhone,
+        hidePoweredBy: updatedAffiliate.hidePoweredBy,
+        fontFamily: updatedAffiliate.fontFamily,
+        borderRadius: updatedAffiliate.borderRadius,
+        headerTheme: updatedAffiliate.headerTheme,
+        logoUrl: updatedAffiliate.logoUrl,
+      });
+      setAffiliates((prev) =>
+        prev.map((a) =>
+          a.id === updatedAffiliate.id ? (affiliate as Affiliate) : a
+        )
+      );
+      toast.success('Branding saved');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save branding');
+      throw err;
+    }
   };
 
   const handleMarkNotificationRead = (notifId: string) => {
@@ -844,6 +977,7 @@ export default function App() {
       lastLogin: 'Never'
     };
     setAdminUsers((prev) => [...prev, newUser]);
+    toast.success('Admin user added');
   };
 
   // Navigation helper for Master Admin
@@ -1195,7 +1329,6 @@ export default function App() {
                 mode={currentView}
                 products={products}
                 pricingRules={pricingRules}
-                affiliates={affiliates}
                 onOpenAddProduct={() => setIsCreateProductOpen(true)}
                 onOpenEditProduct={(prod) => setEditProductTarget(prod)}
                 onOpenEditPricing={(prod) => setEditPricingProduct(prod)}
@@ -1245,6 +1378,11 @@ export default function App() {
       </div>
 
       {/* GLOBAL MASTER ADMIN MODALS */}
+      <ConfirmModal
+        intent={confirmIntent}
+        onClose={() => setConfirmIntent(null)}
+      />
+
       <CreateAffiliateModal
         isOpen={isCreateAffiliateOpen}
         onClose={() => setIsCreateAffiliateOpen(false)}

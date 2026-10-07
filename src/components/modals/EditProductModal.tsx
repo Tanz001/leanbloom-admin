@@ -36,6 +36,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   const [basePrice, setBasePrice] = useState(0);
   const [minimumPrice, setMinimumPrice] = useState(0);
   const [description, setDescription] = useState('');
+  const [buyUrl, setBuyUrl] = useState('');
   const [stockStatus, setStockStatus] =
     useState<Product['stockStatus']>('In Stock');
   const [status, setStatus] = useState<Product['status']>('Active');
@@ -51,6 +52,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
     setBasePrice(product.basePrice);
     setMinimumPrice(product.minimumPrice);
     setDescription(product.description || '');
+    setBuyUrl(product.buyUrl || '');
     setStockStatus(product.stockStatus);
     setStatus(product.status);
     setImageFile(null);
@@ -89,6 +91,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
           basePrice: Number(basePrice),
           minimumPrice: Number(minimumPrice),
           description,
+          buyUrl: buyUrl.trim() || null,
           stockStatus,
           status,
         },
@@ -244,6 +247,20 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             className={`${modalInputClass} resize-none`}
           />
+        </div>
+
+        <div>
+          <label className={modalLabelClass}>Buy / checkout link</label>
+          <input
+            type="url"
+            value={buyUrl}
+            onChange={(e) => setBuyUrl(e.target.value)}
+            placeholder="https://… (opens from storefront Get started)"
+            className={modalInputClass}
+          />
+          <p className={modalHintClass}>
+            When patients click Buy on the storefront product page, this URL opens.
+          </p>
         </div>
 
         <div>

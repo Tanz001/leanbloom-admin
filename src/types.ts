@@ -125,6 +125,8 @@ export interface Product {
   status: 'Active' | 'Draft' | 'Archived';
   description: string;
   imageUrl?: string | null;
+  /** External buy / checkout URL opened from storefront product detail */
+  buyUrl?: string | null;
   stockStatus: 'In Stock' | 'Compounding' | 'Backorder';
 }
 
@@ -134,7 +136,8 @@ export interface AffiliatePriceRule {
   basePrice: number;
   minimumPrice: number;
   activeAffiliates: number;
-  affiliatePriceExamples: {
+  affiliatePrices: {
+    affiliateId: string;
     affiliateName: string;
     sellingPrice: number;
   }[];
