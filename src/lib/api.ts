@@ -31,6 +31,55 @@ export type AppUser = {
 const TOKEN_KEY = 'leanbloom_auth_token';
 const USER_KEY = 'leanbloom_auth_user';
 
+function messageFromPayload(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+
+  if (typeof d.message === 'string' && d.message.trim()) {
+    return d.message.trim();
+  }
+  if (typeof d.error === 'string' && d.error.trim()) {
+    return d.error.trim();
+  }
+  if (Array.isArray(d.errors) && d.errors.length > 0) {
+    const first = d.errors[0];
+    if (typeof first === 'string' && first.trim()) return first.trim();
+    if (first && typeof first === 'object') {
+      const msg = (first as { message?: unknown }).message;
+      if (typeof msg === 'string' && msg.trim()) return msg.trim();
+    }
+  }
+  return null;
+}
+
+function friendlyHttpMessage(status: number): string {
+  switch (status) {
+    case 400:
+      return 'Invalid request. Please check your input and try again.';
+    case 401:
+      return 'Your session expired. Please sign in again.';
+    case 403:
+      return 'You do not have permission to do that.';
+    case 404:
+      return 'The requested item was not found.';
+    case 409:
+      return 'This conflicts with existing data. Please use a different value.';
+    case 413:
+      return 'The file is too large. Maximum size is 10 MB.';
+    case 422:
+      return 'Validation failed. Please check your input.';
+    case 429:
+      return 'Too many requests. Please wait a moment and try again.';
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return 'Something went wrong on the server. Please try again.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -61,14 +110,14 @@ async function request<T>(
     });
   } catch {
     throw new Error(
-      `Cannot reach API at ${API_BASE}. Is the backend running (npm run dev in /backend)?`
+      'Cannot reach the server. Check your connection and try again.'
     );
   }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
-      (data as { message?: string }).message || `Request failed (${res.status})`
+      messageFromPayload(data) || friendlyHttpMessage(res.status)
     );
   }
   return data as T;

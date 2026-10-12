@@ -135,8 +135,8 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
-                  if (file && file.size > 5 * 1024 * 1024) {
-                    setError('Image must be 5 MB or smaller');
+                  if (file && file.size > 10 * 1024 * 1024) {
+                    setError('Image must be 10 MB or smaller');
                     setImageFile(null);
                     return;
                   }
@@ -146,7 +146,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
                 className="block w-full text-sm text-[#5B6B7C] file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#EAF4FB] file:text-[#12345F] hover:file:bg-[#d8ecf9]"
               />
               <p className={modalHintClass}>
-                Leave empty to keep the current image · max 5 MB
+                Leave empty to keep the current image · max 10 MB
               </p>
               {imageFile && (
                 <button

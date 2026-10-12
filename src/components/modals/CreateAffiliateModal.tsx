@@ -412,8 +412,8 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
-                      if (file && file.size > 5 * 1024 * 1024) {
-                        setErrors({ form: 'Logo must be 5 MB or smaller' });
+                      if (file && file.size > 10 * 1024 * 1024) {
+                        setErrors({ form: 'Logo must be 10 MB or smaller' });
                         setLogoFile(null);
                         return;
                       }
@@ -422,7 +422,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
                     }}
                     className="block w-full text-sm text-[#5B6B7C] file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#EAF4FB] file:text-[#12345F] hover:file:bg-[#d8ecf9]"
                   />
-                  <p className={modalHintClass}>PNG, JPG, WebP, SVG · max 5 MB</p>
+                  <p className={modalHintClass}>PNG, JPG, WebP, SVG · max 10 MB</p>
                   {logoFile && (
                     <button
                       type="button"

@@ -133,7 +133,10 @@ function mapPortalProfile(p: AffiliatePortalProfile): AffiliateProfile {
     tradingName: p.tradingName,
     email: p.email,
     phone: p.phone,
-    website: p.website,
+    website:
+      p.website ||
+      (p.domain ? `https://${p.domain}` : '') ||
+      (p.subdomain ? `https://${p.subdomain}` : ''),
     businessName: p.businessName,
     businessEmail: p.businessEmail,
     businessPhone: p.businessPhone,
@@ -1091,6 +1094,7 @@ export default function App() {
           <AffiliateProductsView
             products={affiliateProducts}
             defaultMarkup={defaultMarkup}
+            storefrontBaseUrl={currentAffiliateProfile.website}
             onSetPrice={handleSetAffiliateProductPrice}
             onRefresh={refreshAffiliateProducts}
           />
