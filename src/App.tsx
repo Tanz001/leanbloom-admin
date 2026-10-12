@@ -232,7 +232,11 @@ export default function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
+  const [editPatientTarget, setEditPatientTarget] = useState<Patient | null>(
+    null
+  );
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
+  const [editOrderTarget, setEditOrderTarget] = useState<Order | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -863,6 +867,47 @@ export default function App() {
     toast.success('Patient added');
   };
 
+  const handleUpdateAdminPatient = async (
+    id: string,
+    payload: {
+      affiliateId: string;
+      name: string;
+      email: string;
+      phone?: string;
+      activeProgram?: string;
+      status: 'Active' | 'Pending Intake' | 'Inactive';
+    }
+  ) => {
+    const { patient } = await adminApi.updatePatient(id, payload);
+    setPatients((prev) =>
+      prev.map((p) => (p.id === id ? (patient as Patient) : p))
+    );
+    setEditPatientTarget(null);
+    toast.success('Patient updated');
+  };
+
+  const handleDeleteAdminPatient = (patient: Patient) => {
+    setConfirmIntent({
+      title: 'Delete patient?',
+      description:
+        'This permanently removes the patient. Related orders for this patient will also be deleted.',
+      entityName: patient.name,
+      confirmLabel: 'Delete patient',
+      consequences: [
+        `Patient record for ${patient.affiliateName}`,
+        'Orders linked to this patient',
+      ],
+      onConfirm: async () => {
+        await adminApi.deletePatient(patient.id);
+        setPatients((prev) => prev.filter((p) => p.id !== patient.id));
+        setOrders((prev) =>
+          prev.filter((o) => o.patientId !== patient.id)
+        );
+        toast.success(`Patient “${patient.name}” deleted`);
+      },
+    });
+  };
+
   const handleCreateAdminOrder = async (payload: {
     affiliateId: string;
     patientId: string;
@@ -879,7 +924,6 @@ export default function App() {
   }) => {
     const { order } = await adminApi.createOrder(payload);
     setOrders((prev) => [order as Order, ...prev]);
-    // Refresh patients so ordersCount / activeProgram stay accurate
     try {
       const { patients: list } = await adminApi.listPatients();
       setPatients(list as Patient[]);
@@ -889,11 +933,70 @@ export default function App() {
     toast.success('Order created');
   };
 
-  const handleRefundOrder = (orderId: string) => {
+  const handleUpdateAdminOrder = async (
+    id: string,
+    payload: {
+      affiliateId: string;
+      patientId: string;
+      productId?: string;
+      productName?: string;
+      amount?: number;
+      status: 'Completed' | 'Processing' | 'Pending' | 'Cancelled' | 'Refunded';
+      paymentMethod?: string;
+      shippingStatus?:
+        | 'Delivered'
+        | 'In Transit'
+        | 'Fulfillment Queue'
+        | 'Pending Lab';
+    }
+  ) => {
+    const { order } = await adminApi.updateOrder(id, payload);
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: 'Refunded' } : o))
+      prev.map((o) => (o.orderId === id ? (order as Order) : o))
     );
-    toast.success('Order marked as refunded');
+    setEditOrderTarget(null);
+    toast.success('Order updated');
+  };
+
+  const handleDeleteAdminOrder = (order: Order) => {
+    const uuid = order.orderId;
+    if (!uuid) {
+      toast.error('Cannot delete this order — missing internal ID');
+      return;
+    }
+    setConfirmIntent({
+      title: 'Delete order?',
+      description: 'This permanently removes the order from LeanBloom.',
+      entityName: order.id,
+      confirmLabel: 'Delete order',
+      consequences: [
+        `${order.productName} for ${order.patientName}`,
+        `Affiliate: ${order.affiliateName}`,
+      ],
+      onConfirm: async () => {
+        await adminApi.deleteOrder(uuid);
+        setOrders((prev) => prev.filter((o) => o.orderId !== uuid));
+        toast.success(`Order ${order.id} deleted`);
+      },
+    });
+  };
+
+  const handleRefundOrder = async (orderId: string) => {
+    try {
+      const { order } = await adminApi.updateOrder(orderId, {
+        status: 'Refunded',
+      });
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.orderId === orderId || o.id === orderId ? (order as Order) : o
+        )
+      );
+      toast.success('Order marked as refunded');
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to refund order'
+      );
+    }
   };
 
   const handleDisbursePayout = (paymentId: string) => {
@@ -1364,7 +1467,15 @@ export default function App() {
               <PatientsView
                 patients={patients}
                 affiliates={affiliates}
-                onOpenAddPatient={() => setIsAddPatientOpen(true)}
+                onOpenAddPatient={() => {
+                  setEditPatientTarget(null);
+                  setIsAddPatientOpen(true);
+                }}
+                onEditPatient={(p) => {
+                  setIsAddPatientOpen(false);
+                  setEditPatientTarget(p);
+                }}
+                onDeletePatient={handleDeleteAdminPatient}
               />
             )}
 
@@ -1374,7 +1485,15 @@ export default function App() {
                 orders={orders}
                 affiliates={affiliates}
                 onRefundOrder={handleRefundOrder}
-                onOpenAddOrder={() => setIsAddOrderOpen(true)}
+                onOpenAddOrder={() => {
+                  setEditOrderTarget(null);
+                  setIsAddOrderOpen(true);
+                }}
+                onEditOrder={(o) => {
+                  setIsAddOrderOpen(false);
+                  setEditOrderTarget(o);
+                }}
+                onDeleteOrder={handleDeleteAdminOrder}
               />
             )}
 
@@ -1472,19 +1591,29 @@ export default function App() {
       />
 
       <AdminAddPatientModal
-        isOpen={isAddPatientOpen}
+        isOpen={isAddPatientOpen || Boolean(editPatientTarget)}
         affiliates={affiliates}
-        onClose={() => setIsAddPatientOpen(false)}
+        patient={editPatientTarget}
+        onClose={() => {
+          setIsAddPatientOpen(false);
+          setEditPatientTarget(null);
+        }}
         onCreate={handleCreateAdminPatient}
+        onUpdate={handleUpdateAdminPatient}
       />
 
       <AdminAddOrderModal
-        isOpen={isAddOrderOpen}
+        isOpen={isAddOrderOpen || Boolean(editOrderTarget)}
         affiliates={affiliates}
         patients={patients}
         products={products}
-        onClose={() => setIsAddOrderOpen(false)}
+        order={editOrderTarget}
+        onClose={() => {
+          setIsAddOrderOpen(false);
+          setEditOrderTarget(null);
+        }}
         onCreate={handleCreateAdminOrder}
+        onUpdate={handleUpdateAdminOrder}
       />
     </div>
   );

@@ -534,6 +534,32 @@ export const adminApi = {
     );
   },
 
+  updatePatient(
+    id: string,
+    payload: {
+      affiliateId?: string;
+      name?: string;
+      email?: string;
+      phone?: string | null;
+      activeProgram?: string | null;
+      status?: 'Active' | 'Pending Intake' | 'Inactive';
+    }
+  ) {
+    return request<{ message: string; patient: unknown }>(
+      `/api/admin/patients/${id}`,
+      { method: 'PATCH', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  deletePatient(id: string) {
+    return request<{ message: string }>(
+      `/api/admin/patients/${id}`,
+      { method: 'DELETE' },
+      true
+    );
+  },
+
   listOrders(affiliateId?: string) {
     const q = affiliateId
       ? `?affiliateId=${encodeURIComponent(affiliateId)}`
@@ -563,6 +589,39 @@ export const adminApi = {
     return request<{ message: string; order: unknown }>(
       '/api/admin/orders',
       { method: 'POST', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  updateOrder(
+    id: string,
+    payload: {
+      affiliateId?: string;
+      patientId?: string;
+      productId?: string | null;
+      productName?: string;
+      amount?: number;
+      status?: 'Completed' | 'Processing' | 'Pending' | 'Cancelled' | 'Refunded';
+      paymentMethod?: string | null;
+      shippingStatus?:
+        | 'Delivered'
+        | 'In Transit'
+        | 'Fulfillment Queue'
+        | 'Pending Lab'
+        | null;
+    }
+  ) {
+    return request<{ message: string; order: unknown }>(
+      `/api/admin/orders/${id}`,
+      { method: 'PATCH', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  deleteOrder(id: string) {
+    return request<{ message: string }>(
+      `/api/admin/orders/${id}`,
+      { method: 'DELETE' },
       true
     );
   },
