@@ -102,10 +102,14 @@ export interface Patient {
 
 export interface Order {
   id: string;
+  /** Internal UUID when distinct from display order number */
+  orderId?: string;
+  patientId?: string;
   patientName: string;
   patientEmail: string;
   affiliateId: string;
   affiliateName: string;
+  productId?: string | null;
   productName: string;
   amount: number;
   status: 'Completed' | 'Processing' | 'Pending' | 'Cancelled' | 'Refunded';

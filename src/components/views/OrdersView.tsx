@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
-  ShoppingCart,
   Search,
-  Filter,
   Download,
   Building2,
   Calendar,
@@ -10,7 +8,8 @@ import {
   Truck,
   Eye,
   RotateCcw,
-  X
+  X,
+  Plus,
 } from 'lucide-react';
 import { Order, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
@@ -20,12 +19,14 @@ interface OrdersViewProps {
   orders: Order[];
   affiliates: Affiliate[];
   onRefundOrder: (orderId: string) => void;
+  onOpenAddOrder?: () => void;
 }
 
 export const OrdersView: React.FC<OrdersViewProps> = ({
   orders,
   affiliates,
-  onRefundOrder
+  onRefundOrder,
+  onOpenAddOrder,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
@@ -46,16 +47,28 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
     <div className="space-y-6 pb-12" id="orders-view-container">
       <PageHeader
         title="Orders"
-        description="Orders across all affiliate storefronts."
+        description="Orders across all affiliate clinics. Affiliates only see their own."
         actions={
-          <button
-            type="button"
-            onClick={() => alert('Exporting orders to CSV...')}
-            className="px-3.5 py-2 text-xs font-semibold text-[#4B5563] bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] rounded-xl transition-colors flex items-center gap-1.5"
-          >
-            <Download className="w-4 h-4 text-[#9CA3AF]" />
-            Export
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => alert('Exporting orders to CSV...')}
+              className="px-3.5 py-2 text-xs font-semibold text-[#4B5563] bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] rounded-xl transition-colors flex items-center gap-1.5"
+            >
+              <Download className="w-4 h-4 text-[#9CA3AF]" />
+              Export
+            </button>
+            {onOpenAddOrder && (
+              <button
+                type="button"
+                onClick={onOpenAddOrder}
+                className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors inline-flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Add Order
+              </button>
+            )}
+          </div>
         }
       />
 

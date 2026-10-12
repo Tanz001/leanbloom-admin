@@ -21,8 +21,6 @@ import {
   AffiliateSalesDataPoint
 } from './types';
 import {
-  INITIAL_ORDERS,
-  INITIAL_PATIENTS,
   INITIAL_COMMISSIONS,
   INITIAL_PAYMENTS,
   INITIAL_NOTIFICATIONS,
@@ -59,6 +57,8 @@ import {
   ConfirmModal,
   type ConfirmIntent,
 } from './components/modals/ConfirmModal';
+import { AdminAddPatientModal } from './components/modals/AdminAddPatientModal';
+import { AdminAddOrderModal } from './components/modals/AdminAddOrderModal';
 import { useToast } from './components/ui/Toast';
 
 // Affiliate Dashboard Layout & Views
@@ -229,8 +229,10 @@ export default function App() {
   const [dateRange, setDateRange] = useState<DateRangeOption>('This Month');
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [patients] = useState<Patient[]>(INITIAL_PATIENTS);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -303,17 +305,22 @@ export default function App() {
       setCatalogLoading(true);
       setCatalogError(null);
       try {
-        const [affRes, prodRes, domainRes, pricingRes] = await Promise.all([
-          adminApi.listAffiliates(),
-          adminApi.listProducts(),
-          adminApi.listDomains(),
-          adminApi.listPricing(),
-        ]);
+        const [affRes, prodRes, domainRes, pricingRes, patientsRes, ordersRes] =
+          await Promise.all([
+            adminApi.listAffiliates(),
+            adminApi.listProducts(),
+            adminApi.listDomains(),
+            adminApi.listPricing(),
+            adminApi.listPatients(),
+            adminApi.listOrders(),
+          ]);
         if (cancelled) return;
         setAffiliates(affRes.affiliates as Affiliate[]);
         setProducts(prodRes.products as Product[]);
         setDomains(domainRes.domains as DomainItem[]);
         setPricingRules(pricingRes.pricing as AffiliatePriceRule[]);
+        setPatients(patientsRes.patients as Patient[]);
+        setOrders(ordersRes.orders as Order[]);
       } catch (err) {
         if (!cancelled) {
           setCatalogError(
@@ -843,6 +850,45 @@ export default function App() {
     }
   };
 
+  const handleCreateAdminPatient = async (payload: {
+    affiliateId: string;
+    name: string;
+    email: string;
+    phone?: string;
+    activeProgram?: string;
+    status: 'Active' | 'Pending Intake' | 'Inactive';
+  }) => {
+    const { patient } = await adminApi.createPatient(payload);
+    setPatients((prev) => [patient as Patient, ...prev]);
+    toast.success('Patient added');
+  };
+
+  const handleCreateAdminOrder = async (payload: {
+    affiliateId: string;
+    patientId: string;
+    productId?: string;
+    productName?: string;
+    amount?: number;
+    status: 'Completed' | 'Processing' | 'Pending' | 'Cancelled' | 'Refunded';
+    paymentMethod?: string;
+    shippingStatus?:
+      | 'Delivered'
+      | 'In Transit'
+      | 'Fulfillment Queue'
+      | 'Pending Lab';
+  }) => {
+    const { order } = await adminApi.createOrder(payload);
+    setOrders((prev) => [order as Order, ...prev]);
+    // Refresh patients so ordersCount / activeProgram stay accurate
+    try {
+      const { patients: list } = await adminApi.listPatients();
+      setPatients(list as Patient[]);
+    } catch {
+      /* keep existing */
+    }
+    toast.success('Order created');
+  };
+
   const handleRefundOrder = (orderId: string) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: 'Refunded' } : o))
@@ -1315,7 +1361,11 @@ export default function App() {
 
             {/* 3. PATIENTS VIEW */}
             {currentView === 'patients' && (
-              <PatientsView patients={patients} affiliates={affiliates} />
+              <PatientsView
+                patients={patients}
+                affiliates={affiliates}
+                onOpenAddPatient={() => setIsAddPatientOpen(true)}
+              />
             )}
 
             {/* 4. ORDERS VIEW */}
@@ -1324,6 +1374,7 @@ export default function App() {
                 orders={orders}
                 affiliates={affiliates}
                 onRefundOrder={handleRefundOrder}
+                onOpenAddOrder={() => setIsAddOrderOpen(true)}
               />
             )}
 
@@ -1418,6 +1469,22 @@ export default function App() {
         product={editPricingProduct}
         onClose={() => setEditPricingProduct(null)}
         onSave={handleSavePricing}
+      />
+
+      <AdminAddPatientModal
+        isOpen={isAddPatientOpen}
+        affiliates={affiliates}
+        onClose={() => setIsAddPatientOpen(false)}
+        onCreate={handleCreateAdminPatient}
+      />
+
+      <AdminAddOrderModal
+        isOpen={isAddOrderOpen}
+        affiliates={affiliates}
+        patients={patients}
+        products={products}
+        onClose={() => setIsAddOrderOpen(false)}
+        onCreate={handleCreateAdminOrder}
       />
     </div>
   );

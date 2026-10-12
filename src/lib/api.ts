@@ -507,6 +507,65 @@ export const adminApi = {
       true
     );
   },
+
+  listPatients(affiliateId?: string) {
+    const q = affiliateId
+      ? `?affiliateId=${encodeURIComponent(affiliateId)}`
+      : '';
+    return request<{ patients: unknown[] }>(
+      `/api/admin/patients${q}`,
+      { method: 'GET' },
+      true
+    );
+  },
+
+  createPatient(payload: {
+    affiliateId: string;
+    name: string;
+    email: string;
+    phone?: string;
+    activeProgram?: string;
+    status?: 'Active' | 'Pending Intake' | 'Inactive';
+  }) {
+    return request<{ message: string; patient: unknown }>(
+      '/api/admin/patients',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  listOrders(affiliateId?: string) {
+    const q = affiliateId
+      ? `?affiliateId=${encodeURIComponent(affiliateId)}`
+      : '';
+    return request<{ orders: unknown[] }>(
+      `/api/admin/orders${q}`,
+      { method: 'GET' },
+      true
+    );
+  },
+
+  createOrder(payload: {
+    affiliateId: string;
+    patientId: string;
+    productId?: string;
+    productName?: string;
+    amount?: number;
+    status?: 'Completed' | 'Processing' | 'Pending' | 'Cancelled' | 'Refunded';
+    paymentMethod?: string;
+    shippingStatus?:
+      | 'Delivered'
+      | 'In Transit'
+      | 'Fulfillment Queue'
+      | 'Pending Lab'
+      | null;
+  }) {
+    return request<{ message: string; order: unknown }>(
+      '/api/admin/orders',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true
+    );
+  },
 };
 
 export type AffiliatePortalProduct = {

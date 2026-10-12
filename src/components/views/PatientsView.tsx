@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Users,
   Search,
-  Filter,
   UserCheck,
   Building2,
   Calendar,
@@ -10,7 +9,7 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  ExternalLink
+  Plus,
 } from 'lucide-react';
 import { Patient, Affiliate } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
@@ -19,9 +18,14 @@ import { PageHeader } from '../common/PageHeader';
 interface PatientsViewProps {
   patients: Patient[];
   affiliates: Affiliate[];
+  onOpenAddPatient?: () => void;
 }
 
-export const PatientsView: React.FC<PatientsViewProps> = ({ patients, affiliates }) => {
+export const PatientsView: React.FC<PatientsViewProps> = ({
+  patients,
+  affiliates,
+  onOpenAddPatient,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAffiliateFilter, setSelectedAffiliateFilter] = useState('All');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('All');
@@ -42,12 +46,24 @@ export const PatientsView: React.FC<PatientsViewProps> = ({ patients, affiliates
   return (
     <div className="space-y-6 pb-12" id="patients-view-container">
       <PageHeader
-        title="Customers"
-        description="Customers from every affiliate storefront, in one place."
+        title="Patients"
+        description="Patients across all affiliate clinics. Each patient belongs to one affiliate."
         actions={
-          <div className="flex items-center gap-2 text-xs font-medium text-[#4B5563] bg-white px-3 py-2 rounded-xl border border-[#ECEEF2]">
-            <UserCheck className="w-4 h-4 text-[#9CA3AF]" />
-            <span>{patients.length.toLocaleString()} loaded</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-xs font-medium text-[#4B5563] bg-white px-3 py-2 rounded-xl border border-[#ECEEF2]">
+              <UserCheck className="w-4 h-4 text-[#9CA3AF]" />
+              <span>{patients.length.toLocaleString()} loaded</span>
+            </div>
+            {onOpenAddPatient && (
+              <button
+                type="button"
+                onClick={onOpenAddPatient}
+                className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors inline-flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Add Patient
+              </button>
+            )}
           </div>
         }
       />
