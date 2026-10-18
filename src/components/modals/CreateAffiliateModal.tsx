@@ -674,6 +674,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
               </div>
               <p className={modalHintClass}>Active immediately with SSL.</p>
             </div>
+            {/* Custom domain — temporarily disabled
             <div>
               <label className={modalLabelClass}>Custom domain (optional)</label>
               <input
@@ -689,6 +690,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
                 Point a CNAME to cname.leanbloom.com
               </p>
             </div>
+            */}
           </div>
         )}
 

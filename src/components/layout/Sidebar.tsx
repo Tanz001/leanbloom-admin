@@ -1,20 +1,20 @@
 import React from 'react';
 import {
-  LayoutDashboard,
+  // LayoutDashboard,
   Building2,
   Users,
   ShoppingCart,
   Package,
-  Percent,
-  CreditCard,
-  BarChart3,
-  Settings,
+  // Percent,
+  // CreditCard,
+  // BarChart3,
+  // Settings,
   ChevronLeft,
   ChevronRight,
   X,
   Globe,
   Palette,
-  ShieldCheck,
+  // ShieldCheck,
   DollarSign,
 } from 'lucide-react';
 import { PageView } from '../../types';
@@ -56,11 +56,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Main',
       items: [
-        {
-          id: 'dashboard',
-          label: 'Dashboard',
-          icon: <LayoutDashboard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
+        // Not wired to live APIs yet
+        // {
+        //   id: 'dashboard',
+        //   label: 'Dashboard',
+        //   icon: <LayoutDashboard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+        // },
         {
           id: 'affiliates',
           label: 'Affiliates',
@@ -104,41 +105,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ],
     },
-    {
-      title: 'Finance',
-      items: [
-        {
-          id: 'commissions',
-          label: 'Commissions',
-          icon: <Percent className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
-        {
-          id: 'payments',
-          label: 'Payments',
-          icon: <CreditCard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
-        {
-          id: 'reports',
-          label: 'Reports',
-          icon: <BarChart3 className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
-      ],
-    },
-    {
-      title: 'System',
-      items: [
-        {
-          id: 'users-roles',
-          label: 'Admin Users',
-          icon: <ShieldCheck className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
-        {
-          id: 'settings',
-          label: 'Settings',
-          icon: <Settings className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        },
-      ],
-    },
+    // Finance + System — mock / not fully wired yet
+    // {
+    //   title: 'Finance',
+    //   items: [
+    //     {
+    //       id: 'commissions',
+    //       label: 'Commissions',
+    //       icon: <Percent className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+    //     },
+    //     {
+    //       id: 'payments',
+    //       label: 'Payments',
+    //       icon: <CreditCard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+    //     },
+    //     {
+    //       id: 'reports',
+    //       label: 'Reports',
+    //       icon: <BarChart3 className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: 'System',
+    //   items: [
+    //     {
+    //       id: 'users-roles',
+    //       label: 'Admin Users',
+    //       icon: <ShieldCheck className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+    //     },
+    //     {
+    //       id: 'settings',
+    //       label: 'Settings',
+    //       icon: <Settings className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+    //     },
+    //   ],
+    // },
   ];
 
   const handleNavClick = (viewId: PageView) => {

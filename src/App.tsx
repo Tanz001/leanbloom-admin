@@ -175,7 +175,7 @@ export default function App() {
     hasToken && storedUser
       ? storedUser.role === 'Affiliate'
         ? 'dashboard'
-        : 'dashboard'
+        : 'affiliates'
       : 'signin'
   );
 
@@ -281,7 +281,7 @@ export default function App() {
           setActiveAffiliateId(session.user.affiliateId || 'affiliate_001');
           setCurrentAffiliateRoute('dashboard');
         } else {
-          setCurrentView('dashboard');
+          setCurrentView('affiliates');
         }
       } else {
         setIsAuthenticated(false);
@@ -443,7 +443,7 @@ export default function App() {
       setActiveAffiliateId(userData.affiliateId || 'affiliate_001');
       setCurrentAffiliateRoute('dashboard');
     } else {
-      setCurrentView('dashboard');
+      setCurrentView('affiliates');
     }
   };
 
@@ -469,7 +469,7 @@ export default function App() {
       setActiveAffiliateId(mapped.affiliateId || 'affiliate_001');
       setCurrentAffiliateRoute('dashboard');
     } else {
-      setCurrentView('dashboard');
+      setCurrentView('affiliates');
     }
   };
 

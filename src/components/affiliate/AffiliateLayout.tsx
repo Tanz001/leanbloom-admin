@@ -4,11 +4,11 @@ import {
   Users,
   ShoppingBag,
   Package,
-  TrendingUp,
-  Percent,
-  CreditCard,
+  // TrendingUp,
+  // Percent,
+  // CreditCard,
   Settings,
-  HelpCircle,
+  // HelpCircle,
   Menu,
   X,
   LogOut,
@@ -49,14 +49,15 @@ export const AffiliateLayout: React.FC<AffiliateLayoutProps> = ({
     { route: 'patients' as AffiliateRoute, label: 'Customers', icon: Users },
     { route: 'orders' as AffiliateRoute, label: 'Orders', icon: ShoppingBag },
     { route: 'products' as AffiliateRoute, label: 'Products', icon: Package },
-    { route: 'sales' as AffiliateRoute, label: 'Sales', icon: TrendingUp },
-    { route: 'commissions' as AffiliateRoute, label: 'Commissions', icon: Percent },
-    { route: 'payments' as AffiliateRoute, label: 'Payments', icon: CreditCard },
+    // Not fully productized yet
+    // { route: 'sales' as AffiliateRoute, label: 'Sales', icon: TrendingUp },
+    // { route: 'commissions' as AffiliateRoute, label: 'Commissions', icon: Percent },
+    // { route: 'payments' as AffiliateRoute, label: 'Payments', icon: CreditCard },
   ];
 
   const SECONDARY_NAV_ITEMS = [
     { route: 'settings' as AffiliateRoute, label: 'Settings', icon: Settings },
-    { route: 'support' as AffiliateRoute, label: 'Help & Support', icon: HelpCircle },
+    // { route: 'support' as AffiliateRoute, label: 'Help & Support', icon: HelpCircle },
   ];
 
   const navigate = (route: AffiliateRoute) => {
