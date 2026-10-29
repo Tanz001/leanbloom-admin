@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Eye, EyeOff, Lock, Save, User } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, Lock, Save, Shield, User } from 'lucide-react';
 import { PageHeader } from '../common/PageHeader';
 import {
   authApi,
@@ -97,22 +97,47 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
     }
   };
 
+  const inputClass =
+    'w-full px-3.5 py-2.5 text-sm border border-[#E4E7EC] rounded-xl text-[#0F1C2E] bg-white placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#173B72] focus:ring-2 focus:ring-[#173B72]/10';
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 max-w-3xl">
       <PageHeader
-        title="My Profile"
-        description="Update your display name and password. Email changes are not available yet."
+        title="Settings"
+        description="Update your account name and password."
       />
+
+      {/* Account summary */}
+      <div className="bg-white rounded-2xl border border-[#ECEEF2] p-5 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-[#12345F] text-white flex items-center justify-center text-sm font-semibold shrink-0">
+          {(currentUser.name || 'A')
+            .split(' ')
+            .map((p) => p[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-[#0F1C2E] truncate font-display">
+            {currentUser.name || 'Admin'}
+          </p>
+          <p className="text-xs text-[#6B7280] truncate">{currentUser.email}</p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F0F4FA] text-[#173B72] text-[11px] font-semibold shrink-0">
+          <Shield className="w-3 h-3" />
+          {currentUser.role || 'Master Admin'}
+        </span>
+      </div>
 
       <form
         onSubmit={handleSaveProfile}
-        className="bg-white rounded-2xl border border-[#ECEEF2] shadow-sm overflow-hidden"
+        className="bg-white rounded-2xl border border-[#ECEEF2] overflow-hidden"
       >
-        <div className="px-6 py-4 border-b border-[#F3F4F6] flex items-center gap-2">
+        <div className="px-5 py-4 border-b border-[#F3F4F6] flex items-center gap-2">
           <User className="w-4 h-4 text-[#2D82C4]" />
-          <h2 className="text-sm font-semibold text-[#0F1C2E]">Account details</h2>
+          <h2 className="text-sm font-semibold text-[#0F1C2E]">Profile</h2>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-5 space-y-4">
           {profileMsg && (
             <div className="p-3 bg-[#EAF5EA] text-[#4A9B52] border border-[#4A9B52]/30 rounded-xl text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
@@ -124,21 +149,21 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
               {profileError}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#172033] mb-1">
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
                 Display name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
+                className={inputClass}
                 autoComplete="name"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#172033] mb-1">
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
                 Email
               </label>
               <input
@@ -146,19 +171,19 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
                 value={currentUser.email}
                 readOnly
                 disabled
-                className="w-full px-3.5 py-2 text-sm border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] cursor-not-allowed"
+                className={`${inputClass} bg-[#F7F9FC] text-[#6B7280] cursor-not-allowed`}
               />
-              <p className="mt-1 text-[11px] text-[#9CA3AF]">
-                Email cannot be changed here yet.
+              <p className="mt-1.5 text-[11px] text-[#9CA3AF]">
+                Email is used for sign-in and cannot be changed here.
               </p>
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 bg-[#F9FAFB] border-t border-[#F3F4F6] flex justify-end">
+        <div className="px-5 py-3.5 bg-[#FAFBFC] border-t border-[#F3F4F6] flex justify-end">
           <button
             type="submit"
             disabled={profileSaving}
-            className="px-5 py-2 text-xs font-bold text-white bg-[#174A87] hover:bg-[#123B70] rounded-xl shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-60"
+            className="px-4 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors inline-flex items-center gap-1.5 disabled:opacity-60"
           >
             <Save className="w-3.5 h-3.5" />
             {profileSaving ? 'Saving…' : 'Save profile'}
@@ -168,13 +193,13 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
 
       <form
         onSubmit={handleChangePassword}
-        className="bg-white rounded-2xl border border-[#ECEEF2] shadow-sm overflow-hidden"
+        className="bg-white rounded-2xl border border-[#ECEEF2] overflow-hidden"
       >
-        <div className="px-6 py-4 border-b border-[#F3F4F6] flex items-center gap-2">
+        <div className="px-5 py-4 border-b border-[#F3F4F6] flex items-center gap-2">
           <Lock className="w-4 h-4 text-[#2D82C4]" />
-          <h2 className="text-sm font-semibold text-[#0F1C2E]">Change password</h2>
+          <h2 className="text-sm font-semibold text-[#0F1C2E]">Password</h2>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-5 space-y-4">
           {passwordMsg && (
             <div className="p-3 bg-[#EAF5EA] text-[#4A9B52] border border-[#4A9B52]/30 rounded-xl text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
@@ -186,32 +211,32 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
               {passwordError}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#172033] mb-1">
-                Current password
-              </label>
-              <div className="relative">
-                <input
-                  type={showCurrent ? 'text' : 'password'}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-3.5 py-2 pr-10 text-sm border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrent((v) => !v)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#667085]"
-                  aria-label={showCurrent ? 'Hide password' : 'Show password'}
-                >
-                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
+              Current password
+            </label>
+            <div className="relative max-w-md">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className={`${inputClass} pr-10`}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent((v) => !v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#667085]"
+                aria-label={showCurrent ? 'Hide password' : 'Show password'}
+              >
+                {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#172033] mb-1">
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
                 New password
               </label>
               <div className="relative">
@@ -219,7 +244,7 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
                   type={showNew ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3.5 py-2 pr-10 text-sm border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
+                  className={`${inputClass} pr-10`}
                   autoComplete="new-password"
                   placeholder="Minimum 8 characters"
                   required
@@ -235,25 +260,25 @@ export const AdminProfileView: React.FC<AdminProfileViewProps> = ({
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#172033] mb-1">
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
                 Confirm new password
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
+                className={inputClass}
                 autoComplete="new-password"
                 required
               />
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 bg-[#F9FAFB] border-t border-[#F3F4F6] flex justify-end">
+        <div className="px-5 py-3.5 bg-[#FAFBFC] border-t border-[#F3F4F6] flex justify-end">
           <button
             type="submit"
             disabled={passwordSaving}
-            className="px-5 py-2 text-xs font-bold text-white bg-[#174A87] hover:bg-[#123B70] rounded-xl shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-60"
+            className="px-4 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-xl transition-colors inline-flex items-center gap-1.5 disabled:opacity-60"
           >
             <Lock className="w-3.5 h-3.5" />
             {passwordSaving ? 'Updating…' : 'Update password'}

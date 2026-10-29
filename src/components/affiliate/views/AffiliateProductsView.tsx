@@ -17,7 +17,8 @@ import { useToast } from '../../ui/Toast';
 
 interface AffiliateProductsViewProps {
   products: AffiliatePortalProduct[];
-  defaultMarkup: number;
+  /** @deprecated unused — storefront uses admin base price */
+  defaultMarkup?: number;
   /** Affiliate storefront origin, e.g. https://slug.leanbloom.com */
   storefrontBaseUrl?: string;
   /** @deprecated Affiliate price editing disabled — admin base price is used */

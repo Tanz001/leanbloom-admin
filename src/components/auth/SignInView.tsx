@@ -166,23 +166,12 @@ export const SignInView: React.FC<SignInViewProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-semibold text-[#12345F]"
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-[#2D82C4] hover:text-[#12345F]"
-                  onClick={() =>
-                    setError('Password reset will be available soon.')
-                  }
-                >
-                  Forgot password?
-                </button>
-              </div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-[#12345F] mb-1.5"
+              >
+                Password
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#98A2B3]">
                   <Lock className="h-4 w-4" />

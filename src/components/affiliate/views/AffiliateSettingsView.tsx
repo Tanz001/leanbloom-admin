@@ -8,7 +8,6 @@ import {
   Save,
   CheckCircle2,
   Lock,
-  Smartphone,
   AlertCircle,
 } from 'lucide-react';
 import { AffiliateProfile } from '../../../types';
@@ -158,7 +157,7 @@ export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
             { id: 'business', label: 'Business Information', icon: Building2 },
             { id: 'payout', label: 'Payout Information', icon: CreditCard },
             { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'security', label: 'Security & 2FA', icon: Shield },
+            { id: 'security', label: 'Security', icon: Shield },
           ] as const
         ).map((tab) => {
           const Icon = tab.icon;
@@ -529,45 +528,16 @@ export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
         {activeTab === 'security' && (
           <div className="p-6 space-y-6">
             <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">
-                Security & Multi-Factor Auth
-              </h3>
+              <h3 className="text-sm font-bold text-[#172033]">Security</h3>
               <p className="text-xs text-[#667085]">
-                Protect your partner dashboard credentials and monitor login
-                sessions
+                Update your dashboard password and review recent sign-in activity
               </p>
             </div>
 
-            <div className="p-4 bg-[#F7F9FC] rounded-2xl border border-[#E5E7EB] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white text-[#174A87] flex items-center justify-center border border-[#E5E7EB]">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#172033]">
-                    Two-Factor Authentication (2FA)
-                  </h4>
-                  <p className="text-[11px] text-[#667085]">
-                    Require a 6-digit TOTP code (Google Authenticator /
-                    1Password) on sign-in
-                  </p>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                <input
-                  type="checkbox"
-                  checked={twoFactor}
-                  onChange={(e) => setTwoFactor(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4A9B52]"></div>
-              </label>
-            </div>
-
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3 pt-1">
               <h4 className="text-xs font-bold text-[#172033] uppercase tracking-wider flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5" />
-                Change Dashboard Password
+                Change password
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

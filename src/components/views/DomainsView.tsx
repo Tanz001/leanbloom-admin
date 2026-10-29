@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Globe,
   Search,
-  Plus,
   Filter,
   ShieldCheck,
   CheckCircle2,
@@ -24,12 +23,11 @@ import { DomainItem, Affiliate } from '../../types';
 import { StatCard } from '../common/StatCard';
 import { PageHeader } from '../common/PageHeader';
 import { DnsConfigModal } from '../modals/DnsConfigModal';
-import { AddDomainModal } from '../modals/AddDomainModal';
 
 interface DomainsViewProps {
   domains: DomainItem[];
   affiliates: Affiliate[];
-  onAddDomain: (payload: {
+  onAddDomain?: (payload: {
     affiliateId: string;
     domain: string;
     type?: 'Custom Domain' | 'Platform Subdomain';
@@ -44,8 +42,6 @@ interface DomainsViewProps {
 
 export const DomainsView: React.FC<DomainsViewProps> = ({
   domains,
-  affiliates,
-  onAddDomain,
   onTogglePrimaryDomain,
   onDeleteDomain,
   onReverifyDomain,
@@ -54,7 +50,6 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Pending DNS' | 'Configuration Error'>('All');
   const [typeFilter, setTypeFilter] = useState<'All' | 'Custom Domain' | 'Platform Subdomain'>('All');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedDnsDomain, setSelectedDnsDomain] = useState<DomainItem | null>(null);
   const [copiedDomain, setCopiedDomain] = useState<string | null>(null);
   const [isBulkChecking, setIsBulkChecking] = useState(false);
@@ -98,17 +93,7 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
     <div className="space-y-6 pb-12" id="domains-page-container">
       <PageHeader
         title="Domains"
-        description="Subdomains and custom domains for affiliate storefronts."
-        actions={
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Add Domain
-          </button>
-        }
+        description="Platform subdomains for affiliate storefronts."
       />
 
       {bulkCheckBanner && (
@@ -216,14 +201,6 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
             <span>{isBulkChecking ? 'Checking DNS...' : 'Check All DNS'}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 text-xs font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Custom Domain</span>
-          </button>
         </div>
       </div>
 
@@ -504,12 +481,6 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
         onReverify={(id) => onReverifyDomain(id)}
       />
 
-      <AddDomainModal
-        isOpen={isAddModalOpen}
-        affiliates={affiliates}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddDomain={onAddDomain}
-      />
     </div>
   );
 };

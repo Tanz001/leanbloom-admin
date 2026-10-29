@@ -229,8 +229,8 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#F2F4F7]">
-                    <span className="text-[#667085]">Default Catalog Markup:</span>
-                    <span className="font-mono font-bold text-[#172033]">{selectedAffiliate.defaultMarkup}%</span>
+                    <span className="text-[#667085]">Commission rate:</span>
+                    <span className="font-mono font-bold text-[#172033]">{selectedAffiliate.commissionRate ?? 15}%</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-[#667085]">Tenant Billing Address:</span>
@@ -375,24 +375,20 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                   <tr className="bg-[#F8F9FC] text-[11px] font-bold text-[#667085] uppercase">
                     <th className="py-2.5 px-3">Product Name</th>
                     <th className="py-2.5 px-3">Category</th>
-                    <th className="py-2.5 px-3 text-right">LeanBloom Wholesale</th>
-                    <th className="py-2.5 px-3 text-right">Floor Minimum</th>
-                    <th className="py-2.5 px-3 text-right">Affiliate Retail</th>
-                    <th className="py-2.5 px-3 text-right">Affiliate Margin</th>
+                    <th className="py-2.5 px-3 text-right">Storefront price</th>
+                    <th className="py-2.5 px-3 text-right">Est. commission ({selectedAffiliate.commissionRate ?? 15}%)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F2F4F7]">
                   {products.map((prod) => {
-                    const retailPrice = Math.round(prod.basePrice * (1 + selectedAffiliate.defaultMarkup / 100));
-                    const margin = retailPrice - prod.basePrice;
+                    const rate = selectedAffiliate.commissionRate ?? 15;
+                    const commission = Math.round(prod.basePrice * (rate / 100) * 100) / 100;
                     return (
                       <tr key={prod.id} className="hover:bg-[#F8F9FC]">
                         <td className="py-3 px-3 font-semibold text-[#172033]">{prod.name}</td>
                         <td className="py-3 px-3 text-[#667085]">{prod.category}</td>
-                        <td className="py-3 px-3 text-right font-mono text-[#667085]">${prod.basePrice}</td>
-                        <td className="py-3 px-3 text-right font-mono font-bold text-[#D64545]">${prod.minimumPrice}</td>
-                        <td className="py-3 px-3 text-right font-mono font-bold text-[#173B72]">${retailPrice}</td>
-                        <td className="py-3 px-3 text-right font-mono font-semibold text-[#2E9B4B]">+${margin}</td>
+                        <td className="py-3 px-3 text-right font-mono font-bold text-[#173B72]">${prod.basePrice}</td>
+                        <td className="py-3 px-3 text-right font-mono font-semibold text-[#2E9B4B]">${commission.toFixed(2)}</td>
                       </tr>
                     );
                   })}
@@ -590,8 +586,8 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                 <p className="text-[#667085]">{selectedAffiliate.address || '1400 Broadway Blvd, Suite 400, Austin, TX'}</p>
               </div>
               <div className="p-4 bg-[#F8F9FC] rounded-xl border border-[#E4E7EC] space-y-2">
-                <span className="font-bold text-[#344054]">Default Markup Policy:</span>
-                <p className="text-[#173B72] font-semibold">{selectedAffiliate.defaultMarkup}% over LeanBloom wholesale base</p>
+                <span className="font-bold text-[#344054]">Commission rate:</span>
+                <p className="text-[#173B72] font-semibold">{selectedAffiliate.commissionRate ?? 15}% of each order total</p>
               </div>
             </div>
           </div>
@@ -693,7 +689,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
                         <p className="font-bold text-[#172033] hover:text-[#2D82C4] cursor-pointer" onClick={() => onSelectAffiliate(aff)}>
                           {aff.name}
                         </p>
-                        <p className="text-[11px] text-[#667085]">Markup: {aff.defaultMarkup}%</p>
+                        <p className="text-[11px] text-[#667085]">Commission: {aff.commissionRate ?? 15}%</p>
                       </div>
                     </div>
                   </td>

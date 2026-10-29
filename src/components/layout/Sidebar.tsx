@@ -1,21 +1,16 @@
 import React from 'react';
 import {
-  // LayoutDashboard,
+  LayoutDashboard,
   Building2,
   Users,
   ShoppingCart,
   Package,
-  // Percent,
-  // CreditCard,
-  // BarChart3,
-  // Settings,
   ChevronLeft,
   ChevronRight,
   X,
   Globe,
   Palette,
-  // ShieldCheck,
-  DollarSign,
+  Settings,
 } from 'lucide-react';
 import { PageView } from '../../types';
 import { LeanBloomLogo } from '../brand/LeanBloomLogo';
@@ -56,12 +51,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Main',
       items: [
-        // Not wired to live APIs yet
-        // {
-        //   id: 'dashboard',
-        //   label: 'Dashboard',
-        //   icon: <LayoutDashboard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-        // },
+        {
+          id: 'dashboard',
+          label: 'Dashboard',
+          icon: <LayoutDashboard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+        },
         {
           id: 'affiliates',
           label: 'Affiliates',
@@ -98,49 +92,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: 'Products',
           icon: <Package className="w-[18px] h-[18px]" strokeWidth={1.75} />,
         },
+      ],
+    },
+    {
+      title: 'Account',
+      items: [
         {
-          id: 'pricing',
-          label: 'Pricing',
-          icon: <DollarSign className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+          id: 'settings',
+          label: 'Settings',
+          icon: <Settings className="w-[18px] h-[18px]" strokeWidth={1.75} />,
         },
       ],
     },
-    // Finance + System — mock / not fully wired yet
-    // {
-    //   title: 'Finance',
-    //   items: [
-    //     {
-    //       id: 'commissions',
-    //       label: 'Commissions',
-    //       icon: <Percent className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-    //     },
-    //     {
-    //       id: 'payments',
-    //       label: 'Payments',
-    //       icon: <CreditCard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-    //     },
-    //     {
-    //       id: 'reports',
-    //       label: 'Reports',
-    //       icon: <BarChart3 className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: 'System',
-    //   items: [
-    //     {
-    //       id: 'users-roles',
-    //       label: 'Admin Users',
-    //       icon: <ShieldCheck className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-    //     },
-    //     {
-    //       id: 'settings',
-    //       label: 'Settings',
-    //       icon: <Settings className="w-[18px] h-[18px]" strokeWidth={1.75} />,
-    //     },
-    //   ],
-    // },
   ];
 
   const handleNavClick = (viewId: PageView) => {
@@ -149,8 +112,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white text-[#1A2332]">
-      <div className="h-14 px-4 flex items-center justify-between border-b border-[#EAECEF] flex-shrink-0 bg-white">
+    <div className="flex flex-col h-full bg-white/95 text-[#0F1C2E] backdrop-blur-sm">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-[#E8EEF4] flex-shrink-0">
         <LeanBloomLogo
           collapsed={collapsed}
           size="sm"
@@ -161,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onCloseMobile}
-            className="lg:hidden p-1.5 text-[#9CA3AF] hover:text-[#1A2332] rounded-md hover:bg-[#F3F4F6]"
+            className="lg:hidden p-1.5 text-[#6B7C8F] hover:text-[#0B2440] rounded-lg hover:bg-[#F0F4F8]"
             aria-label="Close sidebar"
           >
             <X className="w-4 h-4" />
@@ -169,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden lg:flex p-1.5 text-[#9CA3AF] hover:text-[#1A2332] rounded-md hover:bg-[#F3F4F6] transition-colors"
+            className="hidden lg:flex p-1.5 text-[#6B7C8F] hover:text-[#0B2440] rounded-lg hover:bg-[#F0F4F8] transition-colors"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? (
@@ -181,19 +144,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2.5 space-y-6">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-5 px-3 space-y-7">
         {sections.map((section) => (
           <div key={section.title}>
             {!collapsed && (
-              <h2 className="px-3 mb-2 text-[10px] font-medium tracking-[0.12em] text-[#A0A8B4] uppercase">
+              <h2 className="px-3 mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-[#8A96A6] uppercase">
                 {section.title}
               </h2>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {section.items.map((item) => {
                 const isActive =
                   currentView === item.id ||
-                  (item.id === 'affiliates' && currentView === 'affiliate-detail');
+                  (item.id === 'affiliates' && currentView === 'affiliate-detail') ||
+                  (item.id === 'settings' && currentView === 'profile');
 
                 return (
                   <button
@@ -201,10 +165,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     type="button"
                     onClick={() => handleNavClick(item.id)}
                     title={collapsed ? item.label : undefined}
-                    className={`w-full group relative flex items-center gap-3 px-3 py-2 text-[13px] rounded-xl transition-all duration-150 ${
+                    className={`w-full group relative flex items-center gap-3 px-3 py-2.5 text-[13.5px] rounded-xl transition-all duration-150 ${
                       isActive
-                        ? 'bg-[#F0F6FB] text-[#12345F] font-semibold border border-[#D6E6F4]'
-                        : 'text-[#5B6B7C] hover:text-[#12345F] hover:bg-[#F7F9FC] border border-transparent'
+                        ? 'bg-[#EAF4FB] text-[#0B2440] font-semibold border border-[#C9DFF0] shadow-[0_1px_2px_rgba(18,52,95,0.04)]'
+                        : 'text-[#4A5A6A] hover:text-[#0B2440] hover:bg-[#F5F8FB] border border-transparent font-medium'
                     } ${collapsed ? 'justify-center px-2' : ''}`}
                   >
                     {isActive && (
@@ -214,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className={
                         isActive
                           ? 'text-[#2D82C4]'
-                          : 'text-[#9CA3AF] group-hover:text-[#4FAF4A]'
+                          : 'text-[#8A96A6] group-hover:text-[#2D82C4]'
                       }
                     >
                       {item.icon}
@@ -223,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <span className="truncate flex-1 text-left">{item.label}</span>
                     )}
                     {!collapsed && item.badge !== undefined && (
-                      <span className="text-[10px] font-medium min-w-[1.25rem] text-center px-1.5 py-0.5 rounded-md bg-[#EEF1F5] text-[#6B7280]">
+                      <span className="text-[11px] font-semibold min-w-[1.35rem] text-center px-1.5 py-0.5 rounded-md bg-[#E8EEF5] text-[#12345F]">
                         {item.badge}
                       </span>
                     )}
@@ -240,8 +204,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <aside
-        className={`hidden lg:flex flex-col fixed top-0 left-0 h-screen border-r border-[#EAECEF] bg-white z-40 transition-all duration-200 ${
-          collapsed ? 'w-[72px]' : 'w-56'
+        className={`hidden lg:flex flex-col fixed top-0 left-0 h-screen border-r border-[#E2E8F0] bg-white z-40 transition-all duration-200 shadow-[1px_0_0_rgba(15,28,46,0.02)] ${
+          collapsed ? 'w-[76px]' : 'w-60'
         }`}
       >
         {sidebarContent}
@@ -249,7 +213,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <div
         className={`hidden lg:block flex-shrink-0 transition-all duration-200 ${
-          collapsed ? 'w-[72px]' : 'w-56'
+          collapsed ? 'w-[76px]' : 'w-60'
         }`}
         aria-hidden
       />
@@ -257,10 +221,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/30"
+            className="fixed inset-0 bg-[#0B2440]/35 backdrop-blur-[2px]"
             onClick={onCloseMobile}
           />
-          <div className="relative flex flex-col w-64 max-w-[85vw] h-full shadow-xl z-10 bg-white">
+          <div className="relative flex flex-col w-72 max-w-[85vw] h-full shadow-2xl z-10 bg-white">
             {sidebarContent}
           </div>
         </div>

@@ -6,7 +6,6 @@ import {
   Smartphone,
   Monitor,
   Check,
-  Copy,
   Lock,
   ArrowRight,
   ShieldCheck,
@@ -16,8 +15,6 @@ import {
   ExternalLink,
   Type,
   Palette,
-  MessageSquare,
-  Code2,
   Globe,
 } from 'lucide-react';
 import { Affiliate, Product } from '../../types';
@@ -51,8 +48,6 @@ const COLOR_PALETTES = [
 const TABS = [
   { id: 'Identity' as const, label: 'Identity', icon: Type },
   { id: 'Theme' as const, label: 'Theme', icon: Palette },
-  { id: 'Portal' as const, label: 'Portal', icon: MessageSquare },
-  { id: 'CSS' as const, label: 'Tokens', icon: Code2 },
 ];
 
 const inputClass =
@@ -93,12 +88,11 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
   const [selectedLogoPreset, setSelectedLogoPreset] = useState<string>('✚');
   const [customLogoUrl, setCustomLogoUrl] = useState(activeAffiliate?.logoUrl || '');
 
-  const [activeTab, setActiveTab] = useState<'Identity' | 'Theme' | 'Portal' | 'CSS'>('Identity');
+  const [activeTab, setActiveTab] = useState<'Identity' | 'Theme'>('Identity');
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [copiedConfig, setCopiedConfig] = useState(false);
 
   useEffect(() => {
     if (selectedAffiliateId) setCurrentAffId(selectedAffiliateId);
@@ -186,26 +180,6 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
     setSelectedLogoPreset('✚');
   };
 
-  const handleCopyJson = () => {
-    const config = {
-      affiliateId: activeAffiliate.id,
-      name,
-      domain: activeAffiliate.domain,
-      primaryColor,
-      secondaryColor,
-      headerTheme,
-      fontFamily,
-      borderRadius,
-      portalTitle,
-      hidePoweredBy,
-      supportEmail,
-      supportPhone,
-    };
-    navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    setCopiedConfig(true);
-    setTimeout(() => setCopiedConfig(false), 2000);
-  };
-
   const sampleProduct = products[0] || {
     id: 'prod-01',
     name: 'Compounded Semaglutide + B12',
@@ -213,9 +187,7 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
     category: 'Medical Program',
   };
 
-  const sampleRetailPrice = Math.round(
-    sampleProduct.basePrice * (1 + activeAffiliate.defaultMarkup / 100)
-  );
+  const sampleRetailPrice = sampleProduct.basePrice;
 
   const radiusPx =
     borderRadius === 'rounded-full'
@@ -616,96 +588,6 @@ export const BrandingView: React.FC<BrandingViewProps> = ({
               </div>
             )}
 
-            {activeTab === 'Portal' && (
-              <div className="space-y-5">
-                <div>
-                  <label className={labelClass}>Intake headline</label>
-                  <input
-                    type="text"
-                    value={portalTitle}
-                    onChange={(e) => setPortalTitle(e.target.value)}
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Welcome message</label>
-                  <textarea
-                    rows={3}
-                    value={welcomeMessage}
-                    onChange={(e) => setWelcomeMessage(e.target.value)}
-                    className={`${inputClass} resize-none`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelClass}>Support email</label>
-                    <input
-                      type="email"
-                      value={supportEmail}
-                      onChange={(e) => setSupportEmail(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Support phone</label>
-                    <input
-                      type="text"
-                      value={supportPhone}
-                      onChange={(e) => setSupportPhone(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <label className="flex items-start gap-3 p-4 rounded-xl border border-[#E4E7EC] bg-[#FAFBFC] cursor-pointer hover:border-[#D0D5DD] transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={hidePoweredBy}
-                    onChange={(e) => setHidePoweredBy(e.target.checked)}
-                    className="mt-0.5 rounded border-[#D0D5DD] text-[#173B72] focus:ring-[#173B72]"
-                  />
-                  <div>
-                    <span className="text-sm font-semibold text-[#0F1C2E]">
-                      Hide “Powered by LeanBloom”
-                    </span>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5 leading-relaxed">
-                      Fully white-label the patient storefront and intake pages.
-                    </p>
-                  </div>
-                </label>
-              </div>
-            )}
-
-            {activeTab === 'CSS' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <label className={labelClass + ' mb-0'}>CSS variables</label>
-                  <button
-                    type="button"
-                    onClick={handleCopyJson}
-                    className="text-[11px] text-[#173B72] hover:text-[#12345F] inline-flex items-center gap-1 font-semibold"
-                  >
-                    <Copy className="w-3 h-3" />
-                    {copiedConfig ? 'Copied' : 'Copy JSON'}
-                  </button>
-                </div>
-
-                <pre className="p-4 bg-[#0F1C2E] text-[#A8C5DB] rounded-xl text-[11px] leading-relaxed font-mono overflow-x-auto border border-[#1A2F4A]">
-{`:root {
-  --brand-primary: ${primaryColor};
-  --brand-secondary: ${secondaryColor};
-  --brand-font: '${fontFamily}', sans-serif;
-  --brand-radius: ${radiusPx};
-  --clinic-name: "${name}";
-}`}
-                </pre>
-                <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
-                  Tokens mirror what the storefront injects for this clinic’s theme.
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="p-4 border-t border-[#E4E7EC] bg-[#FAFBFC] flex flex-wrap items-center justify-between gap-3">

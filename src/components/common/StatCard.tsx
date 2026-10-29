@@ -25,7 +25,7 @@ const ACCENTS = {
   },
   green: {
     iconBg: 'bg-[#EAF6E7]',
-    iconColor: 'text-[#4FAF4A]',
+    iconColor: 'text-[#3A8F36]',
     bar: 'from-[#4FAF4A] to-[#8BC34A]',
   },
 };
@@ -55,20 +55,22 @@ export const StatCard: React.FC<StatCardProps> = ({
             }
           : undefined
       }
-      className={`group relative bg-white rounded-2xl border border-[#E4EAF0] p-4 overflow-hidden transition-all duration-200 ${
+      className={`group relative bg-white rounded-2xl border border-[#E2E8F0] p-5 overflow-hidden transition-all duration-200 shadow-[0_1px_2px_rgba(15,28,46,0.04)] ${
         onClick
-          ? 'cursor-pointer hover:border-[#2D82C4]/35 hover:shadow-[0_8px_28px_rgba(18,52,95,0.08)]'
+          ? 'cursor-pointer hover:border-[#2D82C4]/40 hover:shadow-[0_10px_30px_rgba(18,52,95,0.08)] hover:-translate-y-0.5'
           : ''
       }`}
     >
       <div
-        className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${a.bar} opacity-80 group-hover:opacity-100 transition-opacity`}
+        className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${a.bar} opacity-90 group-hover:opacity-100 transition-opacity`}
       />
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-medium text-[#7A8796] truncate">{label}</p>
-          <p className="mt-1.5 font-display text-xl font-semibold text-[#12345F] tracking-tight tabular-nums">
+          <p className="text-[12px] font-semibold text-[#6B7C8F] tracking-wide uppercase truncate">
+            {label}
+          </p>
+          <p className="mt-2 font-display text-[1.65rem] font-semibold text-[#0B2440] tracking-tight tabular-nums leading-none">
             {value}
           </p>
         </div>
@@ -80,9 +82,9 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       {change && (
-        <div className="mt-3 flex items-center gap-1 text-xs">
+        <div className="mt-4 flex items-center gap-1.5 text-[13px]">
           <span
-            className={`inline-flex items-center font-semibold ${
+            className={`inline-flex items-center gap-0.5 font-semibold ${
               isPositive ? 'text-[#3A8F36]' : 'text-[#B91C1C]'
             }`}
           >
@@ -93,7 +95,6 @@ export const StatCard: React.FC<StatCardProps> = ({
             )}
             {change}
           </span>
-          <span className="text-[#A8B2BE]">vs last month</span>
         </div>
       )}
     </div>

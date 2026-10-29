@@ -3,7 +3,6 @@ import {
   Users,
   Search,
   Filter,
-  Plus,
   Eye,
   ShoppingBag,
   MoreVertical,
@@ -20,14 +19,13 @@ interface AffiliatePatientsViewProps {
   patients: AffiliatePatientItem[];
   orders: AffiliateOrderItem[];
   onSelectPatient: (patient: AffiliatePatientItem) => void;
-  onOpenAddPatient: () => void;
+  onOpenAddPatient?: () => void;
 }
 
 export const AffiliatePatientsView: React.FC<AffiliatePatientsViewProps> = ({
   patients,
   orders,
   onSelectPatient,
-  onOpenAddPatient
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -107,13 +105,6 @@ export const AffiliatePatientsView: React.FC<AffiliatePatientsViewProps> = ({
           >
             <Download className="w-3.5 h-3.5 text-[#667085]" />
             <span>Export CSV</span>
-          </button>
-          <button
-            onClick={onOpenAddPatient}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#174A87] hover:bg-[#123B70] rounded-xl shadow-xs transition-all flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Patient</span>
           </button>
         </div>
       </div>

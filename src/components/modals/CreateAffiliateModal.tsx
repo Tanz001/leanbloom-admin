@@ -55,7 +55,7 @@ const tabs = [
   { id: 'branding' as const, label: 'Branding', icon: Palette },
   { id: 'storefront' as const, label: 'Storefront', icon: Store },
   { id: 'domain' as const, label: 'Domain', icon: Globe },
-  { id: 'pricing' as const, label: 'Pricing', icon: DollarSign },
+  { id: 'commission' as const, label: 'Commission', icon: DollarSign },
 ];
 
 export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
@@ -76,7 +76,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
     domain: '',
     primaryColor: '#173B72',
     secondaryColor: '#4FAF4A',
-    defaultMarkup: 25,
+    commissionRate: 15,
     status: 'Active' as Affiliate['status'],
     portalTitle: '',
     tagline: '',
@@ -162,7 +162,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
           status: formData.status,
           primaryColor: formData.primaryColor,
           secondaryColor: formData.secondaryColor,
-          defaultMarkup: Number(formData.defaultMarkup) || 25,
+          commissionRate: Number(formData.commissionRate) || 15,
           address: formData.address,
           portalTitle: formData.portalTitle || undefined,
           tagline: formData.tagline || undefined,
@@ -694,26 +694,27 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
           </div>
         )}
 
-        {activeTab === 'pricing' && (
+        {activeTab === 'commission' && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-xl border border-[#FEE4E2]/80 bg-[#FFF8F6] flex items-start gap-2.5 text-sm text-[#9A3412]">
-              <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#D99A18]" />
+            <div className="p-3.5 rounded-xl border border-[#E4EAF0] bg-[#F7F9FC] flex items-start gap-2.5 text-sm text-[#344054]">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#2D82C4]" />
               <p className="leading-relaxed">
-                Affiliates cannot price below LeanBloom’s wholesale minimum.
+                Commission is a percentage of each order total. Storefront prices use the admin base price.
               </p>
             </div>
             <div>
-              <label className={modalLabelClass}>Default markup (%)</label>
+              <label className={modalLabelClass}>Commission rate (%)</label>
               <div className="relative w-40">
                 <input
                   type="number"
-                  min={5}
+                  min={0}
                   max={100}
-                  value={formData.defaultMarkup}
+                  step={0.1}
+                  value={formData.commissionRate}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      defaultMarkup: Number(e.target.value),
+                      commissionRate: Number(e.target.value),
                     })
                   }
                   className={`${modalInputClass} pr-9`}
@@ -723,7 +724,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
                 </span>
               </div>
               <p className={modalHintClass}>
-                Suggested retail above wholesale base cost.
+                e.g. 15% on a $100 order pays $15 to this affiliate.
               </p>
             </div>
           </div>
@@ -746,7 +747,7 @@ export const CreateAffiliateModal: React.FC<CreateAffiliateModalProps> = ({
             Cancel
           </button>
           <div className="flex items-center gap-2">
-            {activeTab !== 'pricing' ? (
+            {activeTab !== 'commission' ? (
               <button
                 type="button"
                 onClick={() => {

@@ -27,7 +27,7 @@ export type EditAffiliatePayload = {
   contactPhone?: string;
   address?: string;
   status: Affiliate['status'];
-  defaultMarkup: number;
+  commissionRate: number;
   primaryColor: string;
   secondaryColor: string;
   portalTitle?: string;
@@ -66,7 +66,7 @@ export const EditAffiliateModal: React.FC<EditAffiliateModalProps> = ({
     contactPhone: '',
     address: '',
     status: 'Active' as Affiliate['status'],
-    defaultMarkup: 25,
+    commissionRate: 15,
     primaryColor: '#173B72',
     secondaryColor: '#4FAF4A',
     portalTitle: '',
@@ -96,7 +96,7 @@ export const EditAffiliateModal: React.FC<EditAffiliateModalProps> = ({
       contactPhone: affiliate.contactPhone || '',
       address: affiliate.address || '',
       status: affiliate.status,
-      defaultMarkup: affiliate.defaultMarkup,
+      commissionRate: affiliate.commissionRate ?? 15,
       primaryColor: affiliate.primaryColor || '#173B72',
       secondaryColor: affiliate.secondaryColor || '#4FAF4A',
       portalTitle: affiliate.portalTitle || '',
@@ -154,7 +154,7 @@ export const EditAffiliateModal: React.FC<EditAffiliateModalProps> = ({
           contactPhone: formData.contactPhone,
           address: formData.address,
           status: formData.status,
-          defaultMarkup: Number(formData.defaultMarkup),
+          commissionRate: Number(formData.commissionRate),
           primaryColor: formData.primaryColor,
           secondaryColor: formData.secondaryColor,
           portalTitle: formData.portalTitle,
@@ -309,20 +309,22 @@ export const EditAffiliateModal: React.FC<EditAffiliateModalProps> = ({
             />
           </div>
           <div>
-            <label className={modalLabelClass}>Default markup (%)</label>
+            <label className={modalLabelClass}>Commission rate (%)</label>
             <input
               type="number"
               min={0}
-              max={500}
-              value={formData.defaultMarkup}
+              max={100}
+              step={0.1}
+              value={formData.commissionRate}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  defaultMarkup: Number(e.target.value),
+                  commissionRate: Number(e.target.value),
                 })
               }
               className={modalInputClass}
             />
+            <p className={modalHintClass}>% of each order total paid to this affiliate</p>
           </div>
         </div>
 

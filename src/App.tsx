@@ -175,7 +175,7 @@ export default function App() {
     hasToken && storedUser
       ? storedUser.role === 'Affiliate'
         ? 'dashboard'
-        : 'affiliates'
+        : 'dashboard'
       : 'signin'
   );
 
@@ -281,7 +281,7 @@ export default function App() {
           setActiveAffiliateId(session.user.affiliateId || 'affiliate_001');
           setCurrentAffiliateRoute('dashboard');
         } else {
-          setCurrentView('affiliates');
+          setCurrentView('dashboard');
         }
       } else {
         setIsAuthenticated(false);
@@ -443,7 +443,7 @@ export default function App() {
       setActiveAffiliateId(userData.affiliateId || 'affiliate_001');
       setCurrentAffiliateRoute('dashboard');
     } else {
-      setCurrentView('affiliates');
+      setCurrentView('dashboard');
     }
   };
 
@@ -469,7 +469,7 @@ export default function App() {
       setActiveAffiliateId(mapped.affiliateId || 'affiliate_001');
       setCurrentAffiliateRoute('dashboard');
     } else {
-      setCurrentView('affiliates');
+      setCurrentView('dashboard');
     }
   };
 
@@ -594,7 +594,7 @@ export default function App() {
           contactPhone: newAffData.contactPhone,
           address: newAffData.address,
           status: newAffData.status,
-          defaultMarkup: newAffData.defaultMarkup,
+          commissionRate: newAffData.commissionRate,
           primaryColor: newAffData.primaryColor,
           secondaryColor: newAffData.secondaryColor,
           portalTitle: newAffData.portalTitle,
@@ -629,7 +629,7 @@ export default function App() {
       contactPhone?: string;
       address?: string;
       status: Affiliate['status'];
-      defaultMarkup: number;
+      commissionRate: number;
       primaryColor: string;
       secondaryColor: string;
       portalTitle?: string;
@@ -655,7 +655,7 @@ export default function App() {
           contactPhone: data.contactPhone,
           address: data.address,
           status: data.status,
-          defaultMarkup: data.defaultMarkup,
+          commissionRate: data.commissionRate,
           primaryColor: data.primaryColor,
           secondaryColor: data.secondaryColor,
           portalTitle: data.portalTitle,
@@ -1358,7 +1358,7 @@ export default function App() {
 
   // 3. Authenticated as Admin: Render Admin Console
   return (
-    <div className="h-screen overflow-hidden bg-white text-[#1A2332] flex flex-col font-sans">
+    <div className="h-screen overflow-hidden bg-[#F4F7FB] text-[#0F1C2E] flex flex-col font-sans">
       <div className="lg:pl-0 flex-1 flex min-h-0 overflow-hidden">
         <Sidebar
           currentView={currentView}
@@ -1382,7 +1382,7 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-white">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 lb-canvas">
             <div className="max-w-7xl w-full mx-auto">
             {catalogError && (
               <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
@@ -1497,10 +1497,10 @@ export default function App() {
               />
             )}
 
-            {/* 5. PRODUCTS & PRICING VIEWS */}
-            {(currentView === 'products' || currentView === 'pricing') && (
+            {/* 5. PRODUCTS VIEW */}
+            {currentView === 'products' && (
               <ProductsPricingView
-                mode={currentView}
+                mode="products"
                 products={products}
                 pricingRules={pricingRules}
                 onOpenAddProduct={() => setIsCreateProductOpen(true)}
@@ -1527,19 +1527,18 @@ export default function App() {
               <ReportsView affiliates={affiliates} products={products} />
             )}
 
-            {/* 8. SYSTEM */}
-            {currentView === 'profile' && (
+            {/* 8. SETTINGS (profile + password) */}
+            {(currentView === 'settings' || currentView === 'profile') && (
               <AdminProfileView
                 currentUser={currentUser}
                 onUserUpdated={handleAccountUserUpdated}
               />
             )}
 
-            {(currentView === 'settings' ||
-              currentView === 'notifications' ||
+            {(currentView === 'notifications' ||
               currentView === 'users-roles') && (
               <SystemView
-                initialSub={currentView as 'notifications' | 'users-roles' | 'settings'}
+                initialSub={currentView as 'notifications' | 'users-roles'}
                 notifications={notifications}
                 users={adminUsers}
                 onMarkNotificationRead={handleMarkNotificationRead}

@@ -38,7 +38,10 @@ export interface Affiliate {
   createdAt: string;
   primaryColor: string;
   secondaryColor: string;
-  defaultMarkup: number; // percentage
+  /** @deprecated Storefront uses admin base price; kept for API compat */
+  defaultMarkup?: number;
+  /** Affiliate commission % of order total */
+  commissionRate: number;
   logoUrl?: string;
   address?: string;
   tagline?: string;

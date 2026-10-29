@@ -19,20 +19,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       className={`flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 ${className}`}
     >
       <div className="min-w-0">
-        <div className="flex items-center gap-2.5 mb-2">
+        <div className="flex items-center gap-2.5 mb-2.5">
           <span
-            className="h-1.5 w-8 rounded-full bg-lb-gradient shadow-sm"
+            className="h-1.5 w-9 rounded-full bg-lb-gradient shadow-sm"
             aria-hidden
           />
-          <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-[#2D82C4]">
+          <span className="text-[11px] font-semibold tracking-[0.16em] uppercase text-[#2D82C4]">
             LeanBloom
           </span>
         </div>
-        <h1 className="font-display text-[1.85rem] sm:text-[2.15rem] font-semibold tracking-tight text-[#12345F] leading-[1.1]">
+        <h1 className="font-display text-[1.9rem] sm:text-[2.25rem] font-semibold tracking-tight text-[#0B2440] leading-[1.12]">
           {title}
         </h1>
         {description && (
-          <p className="mt-2 text-sm text-[#5B6B7C] max-w-xl leading-relaxed">
+          <p className="mt-2.5 text-[15px] text-[#5B6B7C] max-w-2xl leading-relaxed">
             {description}
           </p>
         )}

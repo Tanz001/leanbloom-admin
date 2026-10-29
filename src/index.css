@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* LeanBloom logo palette */
+/* LeanBloom admin design tokens */
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", "Manrope", ui-sans-serif, sans-serif;
 
   --color-lb-navy: #12345F;
   --color-lb-navy-deep: #0B2440;
@@ -12,8 +12,10 @@
   --color-lb-green: #4FAF4A;
   --color-lb-green-deep: #3A8F36;
   --color-lb-lime: #8BC34A;
-  --color-lb-mist: #FFFFFF;
+  --color-lb-mist: #F4F7FB;
   --color-lb-ink: #0F1C2E;
+  --color-lb-muted: #5B6B7C;
+  --color-lb-border: #E2E8F0;
 }
 
 @layer base {
@@ -25,24 +27,81 @@
     --lb-green: #4FAF4A;
     --lb-green-deep: #3A8F36;
     --lb-lime: #A8D06A;
-    --lb-mist: #FFFFFF;
+    --lb-mist: #F4F7FB;
     --lb-ink: #0F1C2E;
+    --lb-muted: #5B6B7C;
+    --lb-border: #E2E8F0;
+    --lb-panel: #FFFFFF;
     --lb-gradient: linear-gradient(135deg, #12345F 0%, #2D82C4 48%, #4FAF4A 100%);
-    --lb-gradient-soft: linear-gradient(135deg, rgba(18, 52, 95, 0.08) 0%, rgba(45, 130, 196, 0.08) 50%, rgba(79, 175, 74, 0.1) 100%);
+    --lb-gradient-soft: linear-gradient(
+      145deg,
+      rgba(18, 52, 95, 0.07) 0%,
+      rgba(45, 130, 196, 0.06) 45%,
+      rgba(79, 175, 74, 0.08) 100%
+    );
+    --lb-shadow-sm: 0 1px 2px rgba(15, 28, 46, 0.04);
+    --lb-shadow-md: 0 8px 28px rgba(15, 28, 46, 0.06);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     font-family: var(--font-sans);
     color: var(--lb-ink);
     background-color: var(--lb-mist);
+    font-feature-settings: "ss01" on, "cv11" on;
+    letter-spacing: -0.011em;
   }
 
   .font-display {
     font-family: var(--font-display);
+    letter-spacing: -0.03em;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display);
+    letter-spacing: -0.03em;
+    color: var(--lb-navy-deep);
+  }
+
+  p {
+    line-height: 1.55;
+  }
+
+  ::selection {
+    background: #d6e8f7;
+    color: #0b2440;
+  }
+}
+
+@layer components {
+  .lb-panel {
+    background: var(--lb-panel);
+    border: 1px solid var(--lb-border);
+    border-radius: 1rem;
+    box-shadow: var(--lb-shadow-sm);
+  }
+
+  .lb-panel-soft {
+    background: linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
+    border: 1px solid var(--lb-border);
+    border-radius: 1rem;
+    box-shadow: var(--lb-shadow-sm);
+  }
+
+  .lb-table-wrap {
+    background: var(--lb-panel);
+    border: 1px solid var(--lb-border);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--lb-shadow-sm);
   }
 }
 
@@ -66,18 +125,25 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(45, 130, 196, 0.35);
   }
+
+  .lb-canvas {
+    background:
+      radial-gradient(900px 420px at 12% -10%, rgba(45, 130, 196, 0.09), transparent 55%),
+      radial-gradient(700px 380px at 92% 0%, rgba(79, 175, 74, 0.07), transparent 50%),
+      var(--lb-mist);
+  }
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C5CDD8;
-  border-radius: 4px;
+  background: #c5cdd8;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--lb-blue);
