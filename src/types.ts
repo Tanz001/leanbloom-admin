@@ -15,6 +15,8 @@ export type PageView =
   | 'users-roles'
   | 'settings'
   | 'profile'
+  | 'plans'
+  | 'subscriptions'
   | 'signin'
   | 'signup';
 
@@ -224,7 +226,8 @@ export type AffiliateRoute =
   | 'commissions'
   | 'payments'
   | 'settings'
-  | 'support';
+  | 'support'
+  | 'subscription';
 
 export interface AffiliateUserSession {
   id: string;

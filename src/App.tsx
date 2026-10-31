@@ -42,6 +42,8 @@ import { CommissionsPaymentsView } from './components/views/CommissionsPaymentsV
 import { ReportsView } from './components/views/ReportsView';
 import { SystemView } from './components/views/SystemView';
 import { AdminProfileView } from './components/views/AdminProfileView';
+import { PlansView } from './components/views/PlansView';
+import { SubscriptionsView } from './components/views/SubscriptionsView';
 
 // Auth Views
 import { SignInView } from './components/auth/SignInView';
@@ -72,6 +74,7 @@ import { AffiliateCommissionsView } from './components/affiliate/views/Affiliate
 import { AffiliatePaymentsView } from './components/affiliate/views/AffiliatePaymentsView';
 import { AffiliateSettingsView } from './components/affiliate/views/AffiliateSettingsView';
 import { AffiliateHelpSupportView } from './components/affiliate/views/AffiliateHelpSupportView';
+import { AffiliateSubscriptionView } from './components/affiliate/views/AffiliateSubscriptionView';
 
 // Affiliate Modals
 import { AffiliatePatientDetailModal } from './components/affiliate/AffiliatePatientDetailModal';
@@ -279,7 +282,10 @@ export default function App() {
         setIsAuthenticated(true);
         if (session.user.role === 'Affiliate') {
           setActiveAffiliateId(session.user.affiliateId || 'affiliate_001');
-          setCurrentAffiliateRoute('dashboard');
+          const locked =
+            session.user.subscription != null &&
+            !session.user.subscription.hasAccess;
+          setCurrentAffiliateRoute(locked ? 'subscription' : 'dashboard');
         } else {
           setCurrentView('dashboard');
         }
@@ -366,9 +372,16 @@ export default function App() {
     };
   }, [authReady, isAuthenticated, currentUser.role, currentView]);
 
-  // Load affiliate portal data when logged in as affiliate
+  // Load affiliate portal data when logged in as affiliate (skip when paywalled)
   useEffect(() => {
     if (!authReady || !isAuthenticated || currentUser.role !== 'Affiliate') {
+      return;
+    }
+
+    const locked =
+      currentUser.subscription != null && !currentUser.subscription.hasAccess;
+    if (locked) {
+      setAffiliatePortalLoading(false);
       return;
     }
 
@@ -412,9 +425,23 @@ export default function App() {
         );
       } catch (err) {
         if (!cancelled) {
-          setAffiliatePortalError(
-            err instanceof Error ? err.message : 'Failed to load portal'
-          );
+          const msg =
+            err instanceof Error ? err.message : 'Failed to load portal';
+          if (msg.toLowerCase().includes('subscription')) {
+            setCurrentUser((prev) => ({
+              ...prev,
+              subscription: {
+                ...(prev.subscription || {
+                  status: 'pending_payment',
+                  hasAccess: false,
+                }),
+                hasAccess: false,
+                status: prev.subscription?.status || 'pending_payment',
+              },
+            }));
+            setCurrentAffiliateRoute('subscription');
+          }
+          setAffiliatePortalError(msg);
         }
       } finally {
         if (!cancelled) setAffiliatePortalLoading(false);
@@ -425,7 +452,13 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [authReady, isAuthenticated, currentUser.role, currentUser.affiliateId]);
+  }, [
+    authReady,
+    isAuthenticated,
+    currentUser.role,
+    currentUser.affiliateId,
+    currentUser.subscription?.hasAccess,
+  ]);
 
   // =========================================================================
   // AUTH HANDLERS
@@ -441,33 +474,27 @@ export default function App() {
     setIsAuthenticated(true);
     if (userData.role === 'Affiliate') {
       setActiveAffiliateId(userData.affiliateId || 'affiliate_001');
-      setCurrentAffiliateRoute('dashboard');
+      const locked = userData.subscription
+        ? !userData.subscription.hasAccess
+        : false;
+      setCurrentAffiliateRoute(locked ? 'subscription' : 'dashboard');
     } else {
       setCurrentView('dashboard');
     }
   };
 
-  const handleSignUpSuccess = (userData: {
-    name: string;
-    email: string;
-    organization: string;
-    role?: string;
-    affiliateId?: string;
-  }) => {
-    const role = userData.role || 'Affiliate';
-    const mapped: AppUser = {
-      name: userData.name,
-      email: userData.email,
-      role,
-      affiliateId: userData.affiliateId || 'affiliate_001',
-    };
-    const existing = getAuthToken();
-    if (existing) saveAuthSession(existing, mapped);
-    setCurrentUser(mapped);
+  const handleSignUpSuccess = (userData: AppUser, token?: string) => {
+    if (token) {
+      saveAuthSession(token, userData);
+    } else {
+      const existing = getAuthToken();
+      if (existing) saveAuthSession(existing, userData);
+    }
+    setCurrentUser(userData);
     setIsAuthenticated(true);
-    if (role === 'Affiliate') {
-      setActiveAffiliateId(mapped.affiliateId || 'affiliate_001');
-      setCurrentAffiliateRoute('dashboard');
+    if (userData.role === 'Affiliate') {
+      setActiveAffiliateId(userData.affiliateId || '');
+      setCurrentAffiliateRoute('subscription');
     } else {
       setCurrentView('dashboard');
     }
@@ -1185,10 +1212,24 @@ export default function App() {
 
   // 2. Authenticated as Affiliate: Render dedicated Affiliate Dashboard Layout
   if (currentUser.role === 'Affiliate') {
+    const subscriptionLocked = Boolean(
+      currentUser.subscription && !currentUser.subscription.hasAccess
+    );
+
+    const navigateAffiliate = (route: AffiliateRoute) => {
+      if (subscriptionLocked && route !== 'subscription') {
+        setCurrentAffiliateRoute('subscription');
+        return;
+      }
+      setCurrentAffiliateRoute(route);
+    };
+
     return (
       <AffiliateLayout
-        currentRoute={currentAffiliateRoute}
-        onNavigate={(route) => setCurrentAffiliateRoute(route)}
+        currentRoute={
+          subscriptionLocked ? 'subscription' : currentAffiliateRoute
+        }
+        onNavigate={navigateAffiliate}
         affiliateProfile={currentAffiliateProfile}
         currentSession={{
           id: currentAffiliateProfile.id || currentUser.affiliateId || '',
@@ -1200,6 +1241,31 @@ export default function App() {
         }}
         onLogout={handleLogout}
       >
+        {subscriptionLocked ? (
+          <AffiliateSubscriptionView
+            locked
+            onAccessGranted={() => {
+              setCurrentUser((prev) => {
+                const next = {
+                  ...prev,
+                  subscription: {
+                    ...(prev.subscription || {
+                      status: 'active' as const,
+                      hasAccess: true,
+                    }),
+                    status: 'active' as const,
+                    hasAccess: true,
+                  },
+                };
+                const token = getAuthToken();
+                if (token) saveAuthSession(token, next);
+                return next;
+              });
+              setCurrentAffiliateRoute('dashboard');
+            }}
+          />
+        ) : (
+          <>
         {affiliatePortalError && (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
             {affiliatePortalError}
@@ -1284,6 +1350,29 @@ export default function App() {
           />
         )}
 
+        {currentAffiliateRoute === 'subscription' && (
+          <AffiliateSubscriptionView
+            onAccessGranted={() => {
+              setCurrentUser((prev) => {
+                const next = {
+                  ...prev,
+                  subscription: {
+                    ...(prev.subscription || {
+                      status: 'active' as const,
+                      hasAccess: true,
+                    }),
+                    status: 'active' as const,
+                    hasAccess: true,
+                  },
+                };
+                const token = getAuthToken();
+                if (token) saveAuthSession(token, next);
+                return next;
+              });
+            }}
+          />
+        )}
+
         {currentAffiliateRoute === 'support' && (
           <AffiliateHelpSupportView
             affiliateName={currentAffiliateProfile.name}
@@ -1352,6 +1441,8 @@ export default function App() {
           onSelectPatient={(p) => setSelectedPatientForDetail(p)}
           onSelectOrder={(o) => setSelectedOrderForDetail(o)}
         />
+          </>
+        )}
       </AffiliateLayout>
     );
   }
@@ -1526,6 +1617,10 @@ export default function App() {
             {currentView === 'reports' && (
               <ReportsView affiliates={affiliates} products={products} />
             )}
+
+            {currentView === 'plans' && <PlansView />}
+
+            {currentView === 'subscriptions' && <SubscriptionsView />}
 
             {/* 8. SETTINGS (profile + password) */}
             {(currentView === 'settings' || currentView === 'profile') && (

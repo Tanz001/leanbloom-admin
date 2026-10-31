@@ -11,6 +11,8 @@ import {
   Globe,
   Palette,
   Settings,
+  CreditCard,
+  Layers,
 } from 'lucide-react';
 import { PageView } from '../../types';
 import { LeanBloomLogo } from '../brand/LeanBloomLogo';
@@ -91,6 +93,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'products',
           label: 'Products',
           icon: <Package className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+        },
+      ],
+    },
+    {
+      title: 'Billing',
+      items: [
+        {
+          id: 'plans',
+          label: 'Plans',
+          icon: <Layers className="w-[18px] h-[18px]" strokeWidth={1.75} />,
+        },
+        {
+          id: 'subscriptions',
+          label: 'Subscriptions',
+          icon: <CreditCard className="w-[18px] h-[18px]" strokeWidth={1.75} />,
         },
       ],
     },

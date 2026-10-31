@@ -2,6 +2,15 @@ const API_BASE =
   (import.meta as ImportMeta & { env: Record<string, string> }).env
     ?.VITE_API_URL || 'http://localhost:4000';
 
+export type SubscriptionSummary = {
+  status: 'none' | 'pending_payment' | 'active' | 'expired' | 'cancelled';
+  hasAccess: boolean;
+  planName?: string;
+  planPrice?: number;
+  endsAt?: string | null;
+  daysRemaining?: number | null;
+};
+
 export type ApiAuthUser = {
   id: string;
   name: string;
@@ -13,6 +22,7 @@ export type ApiAuthUser = {
   affiliateName?: string;
   affiliateStatus?: string;
   avatarUrl?: string | null;
+  subscription?: SubscriptionSummary;
 };
 
 export type LoginResponse = {
@@ -26,6 +36,7 @@ export type AppUser = {
   email: string;
   role: string;
   affiliateId?: string;
+  subscription?: SubscriptionSummary;
 };
 
 const TOKEN_KEY = 'leanbloom_auth_token';
@@ -158,6 +169,55 @@ export const authApi = {
       },
       true
     );
+  },
+
+  signupAffiliate(payload: {
+    clinicName: string;
+    ownerName: string;
+    email: string;
+    phone?: string;
+    password: string;
+    planId?: string;
+  }) {
+    return request<LoginResponse>('/api/auth/signup/affiliate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export type SubscriptionPlan = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  billingPeriod: 'monthly';
+  isActive: boolean;
+  sortOrder: number;
+};
+
+export type AffiliateSubscriptionRow = {
+  id: string;
+  affiliateId: string;
+  affiliateName?: string;
+  contactEmail?: string;
+  planId: string;
+  planName: string;
+  planPrice: number;
+  status: 'pending_payment' | 'active' | 'expired' | 'cancelled';
+  startsAt: string | null;
+  endsAt: string | null;
+  cancelledAt: string | null;
+  lastPaymentAt: string | null;
+  hasAccess: boolean;
+  daysRemaining: number | null;
+};
+
+export const plansApi = {
+  listPublic() {
+    return request<{ plans: SubscriptionPlan[] }>('/api/plans', {
+      method: 'GET',
+    });
   },
 };
 
@@ -508,6 +568,59 @@ export const adminApi = {
     );
   },
 
+  listPlans() {
+    return request<{ plans: SubscriptionPlan[] }>(
+      '/api/admin/plans',
+      { method: 'GET' },
+      true
+    );
+  },
+
+  createPlan(payload: {
+    name: string;
+    description?: string;
+    price: number;
+    isActive?: boolean;
+  }) {
+    return request<{ message: string; plan: SubscriptionPlan }>(
+      '/api/admin/plans',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  updatePlan(
+    id: string,
+    payload: {
+      name?: string;
+      description?: string;
+      price?: number;
+      isActive?: boolean;
+    }
+  ) {
+    return request<{ message: string; plan: SubscriptionPlan }>(
+      `/api/admin/plans/${id}`,
+      { method: 'PATCH', body: JSON.stringify(payload) },
+      true
+    );
+  },
+
+  deletePlan(id: string) {
+    return request<{ message: string }>(
+      `/api/admin/plans/${id}`,
+      { method: 'DELETE' },
+      true
+    );
+  },
+
+  listSubscriptions() {
+    return request<{ subscriptions: AffiliateSubscriptionRow[] }>(
+      '/api/admin/subscriptions',
+      { method: 'GET' },
+      true
+    );
+  },
+
   listPatients(affiliateId?: string) {
     const q = affiliateId
       ? `?affiliateId=${encodeURIComponent(affiliateId)}`
@@ -771,6 +884,41 @@ export const affiliateApi = {
       true
     );
   },
+
+  getSubscription() {
+    return request<{
+      subscription: AffiliateSubscriptionRow | null;
+      paypal: { clientId: string; mock: boolean };
+    }>('/api/affiliate/subscription', { method: 'GET' }, true);
+  },
+
+  createSubscriptionOrder() {
+    return request<{
+      orderId: string;
+      approveUrl: string;
+      mock: boolean;
+      amount: number;
+      planName: string;
+    }>('/api/affiliate/subscription/create-order', { method: 'POST' }, true);
+  },
+
+  captureSubscription(orderId: string) {
+    return request<{
+      message: string;
+      subscription: AffiliateSubscriptionRow | null;
+    }>(
+      '/api/affiliate/subscription/capture',
+      { method: 'POST', body: JSON.stringify({ orderId }) },
+      true
+    );
+  },
+
+  cancelSubscription() {
+    return request<{
+      message: string;
+      subscription: AffiliateSubscriptionRow | null;
+    }>('/api/affiliate/subscription/cancel', { method: 'POST' }, true);
+  },
 };
 
 export function mapApiUserToAppRole(user: ApiAuthUser): AppUser {
@@ -780,6 +928,7 @@ export function mapApiUserToAppRole(user: ApiAuthUser): AppUser {
       email: user.email,
       role: 'Affiliate',
       affiliateId: user.affiliateId,
+      subscription: user.subscription,
     };
   }
   return {
