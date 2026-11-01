@@ -41,12 +41,23 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    let preferredPlanId = params.get('planId') || '';
+    const hash = window.location.hash || '';
+    const qIndex = hash.indexOf('?');
+    if (!preferredPlanId && qIndex >= 0) {
+      preferredPlanId =
+        new URLSearchParams(hash.slice(qIndex + 1)).get('planId') || '';
+    }
+
     plansApi
       .listPublic()
       .then(({ plans: rows }) => {
         setPlans(rows);
-        if (rows[0]) {
-          setFormData((prev) => ({ ...prev, planId: rows[0].id }));
+        const match = rows.find((p) => p.id === preferredPlanId);
+        const nextId = match?.id || rows[0]?.id || '';
+        if (nextId) {
+          setFormData((prev) => ({ ...prev, planId: nextId }));
         }
       })
       .catch(() => setPlans([]));
@@ -108,6 +119,40 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
           {error && (
             <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
               {error}
+            </div>
+          )}
+
+          {plans.length > 1 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#12345F]">Choose a plan</p>
+              <div className="grid gap-2">
+                {plans.map((plan) => {
+                  const active = formData.planId === plan.id;
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, planId: plan.id }))
+                      }
+                      className={`text-left p-3 rounded-xl border transition-colors ${
+                        active
+                          ? 'border-[#2D82C4] bg-[#EAF4FB] ring-1 ring-[#2D82C4]/30'
+                          : 'border-[#E2E8F0] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold text-[#0B2440]">
+                          {plan.name}
+                        </span>
+                        <span className="text-sm font-semibold tabular-nums text-[#0B2440]">
+                          ${plan.price.toFixed(2)}/mo
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 

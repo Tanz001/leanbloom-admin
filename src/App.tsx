@@ -180,13 +180,14 @@ export default function App() {
   );
 
   // Current view for Master Admin or Auth
-  const [currentView, setCurrentView] = useState<PageView>(
-    hasToken && storedUser
-      ? storedUser.role === 'Affiliate'
-        ? 'dashboard'
-        : 'dashboard'
-      : 'signin'
-  );
+  const [currentView, setCurrentView] = useState<PageView>(() => {
+    if (hasToken && storedUser) return 'dashboard';
+    // Deep link from marketing site: /signup or #/signup
+    const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    const hash = (window.location.hash || '').toLowerCase();
+    if (path.endsWith('/signup') || hash.includes('signup')) return 'signup';
+    return 'signin';
+  });
 
   // =========================================================================
   // MULTI-TENANT AFFILIATE DASHBOARD STATE
@@ -267,6 +268,20 @@ export default function App() {
   const [editProductTarget, setEditProductTarget] = useState<Product | null>(null);
   const [editPricingProduct, setEditPricingProduct] = useState<Product | null>(null);
   const [confirmIntent, setConfirmIntent] = useState<ConfirmIntent | null>(null);
+
+  // Keep /signup URL in sync for marketing → admin deep links
+  useEffect(() => {
+    const syncFromLocation = () => {
+      if (getAuthToken()) return;
+      const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      if (path.endsWith('/signup') || hash.includes('signup')) {
+        setCurrentView('signup');
+      }
+    };
+    window.addEventListener('popstate', syncFromLocation);
+    return () => window.removeEventListener('popstate', syncFromLocation);
+  }, []);
 
   // =========================================================================
   // AUTH — restore session from localStorage on refresh
@@ -1192,11 +1207,17 @@ export default function App() {
       setIsAuthenticated(false);
       setCurrentUser({ name: '', email: '', role: '' });
       setCurrentView('signin');
+      if (window.location.pathname.toLowerCase().includes('signup')) {
+        window.history.pushState({}, '', '/');
+      }
       return;
     }
     if (view === 'signup') {
       setIsAuthenticated(false);
       setCurrentView('signup');
+      if (!window.location.pathname.toLowerCase().endsWith('/signup')) {
+        window.history.pushState({}, '', '/signup');
+      }
       return;
     }
     setCurrentView(view);
@@ -1224,14 +1245,14 @@ export default function App() {
       return (
         <SignUpView
           onSignUpSuccess={handleSignUpSuccess}
-          onGoToSignIn={() => setCurrentView('signin')}
+          onGoToSignIn={() => handleNavigate('signin')}
         />
       );
     }
     return (
       <SignInView
         onSignInSuccess={handleSignInSuccess}
-        onGoToSignUp={() => setCurrentView('signup')}
+        onGoToSignUp={() => handleNavigate('signup')}
       />
     );
   }
