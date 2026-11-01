@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Ban, DollarSign, Clock } from 'lucide-react';
 import { PageHeader } from '../common/PageHeader';
+import { StatCard } from '../common/StatCard';
 import { adminApi, type AffiliateSubscriptionRow } from '../../lib/api';
 import { useToast } from '../ui/Toast';
 import { StatusBadge } from '../common/StatusBadge';
@@ -40,6 +42,27 @@ export const SubscriptionsView: React.FC = () => {
     void load();
   }, [load]);
 
+  const stats = useMemo(() => {
+    const activeRows = rows.filter((r) => r.status === 'active');
+    const cancelled = rows.filter(
+      (r) => r.status === 'cancelled' || Boolean(r.cancelledAt)
+    ).length;
+    const pending = rows.filter((r) => r.status === 'pending_payment').length;
+    const expired = rows.filter((r) => r.status === 'expired').length;
+    const totalAmount = activeRows.reduce(
+      (sum, r) => sum + (Number(r.planPrice) || 0),
+      0
+    );
+    return {
+      active: activeRows.length,
+      cancelled,
+      pending,
+      expired,
+      totalAmount,
+      total: rows.length,
+    };
+  }, [rows]);
+
   const statusLabel = (s: AffiliateSubscriptionRow['status']) => {
     if (s === 'pending_payment') return 'Pending payment';
     if (s === 'active') return 'Active';
@@ -53,6 +76,54 @@ export const SubscriptionsView: React.FC = () => {
         title="Subscriptions"
         description="Which affiliate bought which plan, and current payment status."
       />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard
+          label="Active"
+          value={loading ? '—' : String(stats.active)}
+          change={`${stats.total} total subscriptions`}
+          isPositive
+          accent="green"
+          icon={<CheckCircle2 className="w-4 h-4" />}
+        />
+        <StatCard
+          label="Cancelled"
+          value={loading ? '—' : String(stats.cancelled)}
+          change={
+            stats.expired
+              ? `${stats.expired} expired · ${stats.pending} pending`
+              : `${stats.pending} pending payment`
+          }
+          isPositive={false}
+          accent="navy"
+          icon={<Ban className="w-4 h-4" />}
+        />
+        <StatCard
+          label="Monthly amount"
+          value={
+            loading
+              ? '—'
+              : `$${stats.totalAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`
+          }
+          change="Sum of active plan prices"
+          isPositive
+          accent="blue"
+          icon={<DollarSign className="w-4 h-4" />}
+        />
+        <StatCard
+          label="Pending / expired"
+          value={
+            loading ? '—' : `${stats.pending} / ${stats.expired}`
+          }
+          change="Awaiting pay · period ended"
+          isPositive={stats.pending === 0}
+          accent="blue"
+          icon={<Clock className="w-4 h-4" />}
+        />
+      </div>
 
       <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-sm">
         {loading ? (

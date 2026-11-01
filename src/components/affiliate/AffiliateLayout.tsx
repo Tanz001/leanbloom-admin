@@ -5,6 +5,7 @@ import {
   ShoppingBag,
   Package,
   CreditCard,
+  Palette,
   Settings,
   // HelpCircle,
   Menu,
@@ -47,6 +48,7 @@ export const AffiliateLayout: React.FC<AffiliateLayoutProps> = ({
     { route: 'patients' as AffiliateRoute, label: 'Customers', icon: Users },
     { route: 'orders' as AffiliateRoute, label: 'Orders', icon: ShoppingBag },
     { route: 'products' as AffiliateRoute, label: 'Products', icon: Package },
+    { route: 'branding' as AffiliateRoute, label: 'Branding', icon: Palette },
     { route: 'subscription' as AffiliateRoute, label: 'Subscription', icon: CreditCard },
   ];
 

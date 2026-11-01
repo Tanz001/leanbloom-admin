@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   PageView,
   DateRangeOption,
@@ -75,6 +75,7 @@ import { AffiliatePaymentsView } from './components/affiliate/views/AffiliatePay
 import { AffiliateSettingsView } from './components/affiliate/views/AffiliateSettingsView';
 import { AffiliateHelpSupportView } from './components/affiliate/views/AffiliateHelpSupportView';
 import { AffiliateSubscriptionView } from './components/affiliate/views/AffiliateSubscriptionView';
+import { AffiliateBrandingView } from './components/affiliate/views/AffiliateBrandingView';
 
 // Affiliate Modals
 import { AffiliatePatientDetailModal } from './components/affiliate/AffiliatePatientDetailModal';
@@ -147,6 +148,11 @@ function mapPortalProfile(p: AffiliatePortalProfile): AffiliateProfile {
     country: p.country,
     commissionRate: p.commissionRate,
     status: p.status,
+    primaryColor: p.primaryColor,
+    secondaryColor: p.secondaryColor,
+    logoUrl: p.logoUrl || undefined,
+    subdomain: p.subdomain,
+    domain: p.domain,
     payoutMethod: p.payoutMethod,
     bankName: p.bankName,
     routingNumberMasked: p.routingNumberMasked,
@@ -506,6 +512,26 @@ export default function App() {
     setCurrentUser({ name: '', email: '', role: '' });
     setCurrentView('signin');
   };
+
+  const handleSubscriptionAccessGranted = useCallback(() => {
+    setCurrentUser((prev) => {
+      const next = {
+        ...prev,
+        subscription: {
+          ...(prev.subscription || {
+            status: 'active' as const,
+            hasAccess: true,
+          }),
+          status: 'active' as const,
+          hasAccess: true,
+        },
+      };
+      const token = getAuthToken();
+      if (token) saveAuthSession(token, next);
+      return next;
+    });
+    setCurrentAffiliateRoute('dashboard');
+  }, []);
 
   // Switch to Admin Console — removed (affiliates no longer switch into admin)
   // =========================================================================
@@ -1244,25 +1270,7 @@ export default function App() {
         {subscriptionLocked ? (
           <AffiliateSubscriptionView
             locked
-            onAccessGranted={() => {
-              setCurrentUser((prev) => {
-                const next = {
-                  ...prev,
-                  subscription: {
-                    ...(prev.subscription || {
-                      status: 'active' as const,
-                      hasAccess: true,
-                    }),
-                    status: 'active' as const,
-                    hasAccess: true,
-                  },
-                };
-                const token = getAuthToken();
-                if (token) saveAuthSession(token, next);
-                return next;
-              });
-              setCurrentAffiliateRoute('dashboard');
-            }}
+            onAccessGranted={handleSubscriptionAccessGranted}
           />
         ) : (
           <>
@@ -1350,26 +1358,28 @@ export default function App() {
           />
         )}
 
+        {currentAffiliateRoute === 'branding' && (
+          <AffiliateBrandingView
+            onBrandingSaved={(branding) => {
+              setCurrentAffiliateProfile((prev) => ({
+                ...prev,
+                name: branding.name,
+                tradingName: branding.portalTitle || branding.name,
+                businessName: branding.name,
+                businessEmail: branding.supportEmail || prev.businessEmail,
+                businessPhone: branding.supportPhone || prev.businessPhone,
+                website: branding.website || prev.website,
+                primaryColor: branding.primaryColor,
+                secondaryColor: branding.secondaryColor,
+                logoUrl: branding.logoUrl || undefined,
+              }));
+            }}
+          />
+        )}
+
         {currentAffiliateRoute === 'subscription' && (
           <AffiliateSubscriptionView
-            onAccessGranted={() => {
-              setCurrentUser((prev) => {
-                const next = {
-                  ...prev,
-                  subscription: {
-                    ...(prev.subscription || {
-                      status: 'active' as const,
-                      hasAccess: true,
-                    }),
-                    status: 'active' as const,
-                    hasAccess: true,
-                  },
-                };
-                const token = getAuthToken();
-                if (token) saveAuthSession(token, next);
-                return next;
-              });
-            }}
+            onAccessGranted={handleSubscriptionAccessGranted}
           />
         )}
 

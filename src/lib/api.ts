@@ -792,11 +792,93 @@ export type AffiliatePortalProfile = {
   lastLoginTime: string;
 };
 
+export type AffiliateBranding = {
+  id: string;
+  name: string;
+  slug: string;
+  subdomain: string;
+  domain: string;
+  website: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logoUrl: string | null;
+  tagline: string;
+  portalTitle: string;
+  welcomeMessage: string;
+  supportEmail: string;
+  supportPhone: string;
+  businessHours: string;
+  hidePoweredBy: boolean;
+  trustBadgeText: string;
+  clinicalPartnerNote: string;
+  fontFamily:
+    | 'Plus Jakarta Sans'
+    | 'Inter'
+    | 'Outfit'
+    | 'DM Sans'
+    | 'Playfair Display';
+  borderRadius: 'rounded-md' | 'rounded-lg' | 'rounded-xl' | 'rounded-full';
+  headerTheme: 'white' | 'navy' | 'dark' | 'cream';
+};
+
+export type UpdateAffiliateBrandingPayload = Partial<{
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logoUrl: string | null;
+  tagline: string;
+  portalTitle: string;
+  welcomeMessage: string;
+  supportEmail: string;
+  supportPhone: string;
+  businessHours: string;
+  hidePoweredBy: boolean;
+  trustBadgeText: string;
+  clinicalPartnerNote: string;
+  fontFamily: AffiliateBranding['fontFamily'];
+  borderRadius: AffiliateBranding['borderRadius'];
+  headerTheme: AffiliateBranding['headerTheme'];
+}>;
+
 export const affiliateApi = {
   me() {
     return request<{ profile: AffiliatePortalProfile; user: ApiAuthUser }>(
       '/api/affiliate/me',
       { method: 'GET' },
+      true
+    );
+  },
+
+  getBranding() {
+    return request<{ branding: AffiliateBranding }>(
+      '/api/affiliate/branding',
+      { method: 'GET' },
+      true
+    );
+  },
+
+  updateBranding(
+    payload: UpdateAffiliateBrandingPayload,
+    logoFile?: File | null
+  ) {
+    if (logoFile) {
+      const form = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          form.append(key, String(value));
+        }
+      });
+      form.append('logo', logoFile);
+      return request<{ message: string; branding: AffiliateBranding }>(
+        '/api/affiliate/branding',
+        { method: 'PATCH', body: form },
+        true
+      );
+    }
+
+    return request<{ message: string; branding: AffiliateBranding }>(
+      '/api/affiliate/branding',
+      { method: 'PATCH', body: JSON.stringify(payload) },
       true
     );
   },

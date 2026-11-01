@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, ShieldCheck, RefreshCw, Ban } from 'lucide-react';
 import {
   affiliateApi,
@@ -29,24 +29,38 @@ export const AffiliateSubscriptionView: React.FC<
   const [mock, setMock] = useState(false);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await affiliateApi.getSubscription();
-      setSub(res.subscription);
-      setMock(Boolean(res.paypal?.mock));
-      if (res.subscription?.hasAccess) onAccessGranted?.();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load subscription');
-    } finally {
-      setLoading(false);
-    }
-  }, [toast, onAccessGranted]);
+  const onAccessGrantedRef = useRef(onAccessGranted);
+  const captureStartedRef = useRef(false);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    onAccessGrantedRef.current = onAccessGranted;
+  }, [onAccessGranted]);
+
+  // Load once on mount — do not call onAccessGranted here (avoids re-render loops)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await affiliateApi.getSubscription();
+        if (cancelled) return;
+        setSub(res.subscription);
+        setMock(Boolean(res.paypal?.mock));
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : 'Failed to load subscription'
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch
+  }, []);
 
   useEffect(() => {
     // PayPal return: #/subscription/complete?token=ORDER_ID
@@ -55,7 +69,8 @@ export const AffiliateSubscriptionView: React.FC<
     const q = hash.split('?')[1] || '';
     const params = new URLSearchParams(q);
     const token = params.get('token');
-    if (!token) return;
+    if (!token || captureStartedRef.current) return;
+    captureStartedRef.current = true;
 
     let cancelled = false;
     (async () => {
@@ -65,9 +80,10 @@ export const AffiliateSubscriptionView: React.FC<
         if (cancelled) return;
         setSub(res.subscription);
         toast.success('Payment received — subscription active');
-        onAccessGranted?.();
+        onAccessGrantedRef.current?.();
         window.location.hash = '#/subscription';
       } catch (err) {
+        captureStartedRef.current = false;
         if (!cancelled) {
           toast.error(err instanceof Error ? err.message : 'Payment capture failed');
         }
@@ -79,7 +95,8 @@ export const AffiliateSubscriptionView: React.FC<
     return () => {
       cancelled = true;
     };
-  }, [toast, onAccessGranted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once when returning from PayPal
+  }, []);
 
   const payNow = async () => {
     setPaying(true);
@@ -89,7 +106,7 @@ export const AffiliateSubscriptionView: React.FC<
         const res = await affiliateApi.captureSubscription(order.orderId);
         setSub(res.subscription);
         toast.success('Mock payment complete — subscription active');
-        onAccessGranted?.();
+        onAccessGrantedRef.current?.();
       } else if (order.approveUrl) {
         window.location.href = order.approveUrl;
       } else {

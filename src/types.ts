@@ -225,6 +225,7 @@ export type AffiliateRoute =
   | 'sales'
   | 'commissions'
   | 'payments'
+  | 'branding'
   | 'settings'
   | 'support'
   | 'subscription';
@@ -253,6 +254,11 @@ export interface AffiliateProfile {
   country: string;
   commissionRate: number; // percentage, e.g. 15%
   status: 'Active' | 'Pending' | 'Suspended';
+  primaryColor?: string;
+  secondaryColor?: string;
+  logoUrl?: string;
+  subdomain?: string;
+  domain?: string;
   payoutMethod: 'Bank Transfer' | 'PayPal';
   bankName: string;
   routingNumberMasked: string;
