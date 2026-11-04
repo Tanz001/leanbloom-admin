@@ -196,6 +196,16 @@ export type SubscriptionPlan = {
   sortOrder: number;
 };
 
+export type BillingQuote = {
+  kind: 'initial' | 'monthly';
+  months: number;
+  monthlyPrice: number;
+  listAmount: number;
+  discountPercent: number;
+  amountDue: number;
+  label: string;
+};
+
 export type AffiliateSubscriptionRow = {
   id: string;
   affiliateId: string;
@@ -211,6 +221,7 @@ export type AffiliateSubscriptionRow = {
   lastPaymentAt: string | null;
   hasAccess: boolean;
   daysRemaining: number | null;
+  billing?: BillingQuote;
 };
 
 export const plansApi = {
@@ -981,6 +992,7 @@ export const affiliateApi = {
       mock: boolean;
       amount: number;
       planName: string;
+      billing?: BillingQuote;
     }>('/api/affiliate/subscription/create-order', { method: 'POST' }, true);
   },
 

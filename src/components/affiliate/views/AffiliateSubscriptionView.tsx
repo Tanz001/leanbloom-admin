@@ -141,9 +141,9 @@ export const AffiliateSubscriptionView: React.FC<
       <PageHeader
         title="Subscription"
         description={
-          locked
-            ? 'Your portal is locked until you pay or renew your monthly plan.'
-            : 'Manage your monthly LeanBloom partner plan.'
+          sub?.billing?.kind === 'monthly'
+            ? 'Renew one month at the full plan price. The 10% discount applied only to the first payment.'
+            : 'Your first payment is 3 months upfront with 10% off. After that, renew one month at a time.'
         }
       />
 
@@ -169,6 +169,24 @@ export const AffiliateSubscriptionView: React.FC<
                 <p className="text-sm text-[#5B6B7C] mt-1">
                   ${Number(sub?.planPrice ?? 0).toFixed(2)} / month · PayPal
                 </p>
+                {sub?.billing?.kind === 'initial' ? (
+                  <p className="mt-2 flex items-baseline gap-2 tabular-nums">
+                    <span className="text-sm text-[#98A2B3] line-through">
+                      ${Number(sub.billing.listAmount).toFixed(2)}
+                    </span>
+                    <span className="text-lg font-semibold text-[#0B2440]">
+                      ${Number(sub.billing.amountDue).toFixed(2)}
+                    </span>
+                    <span className="text-xs font-medium text-[#5B6B7C]">
+                      10% off · 3 months
+                    </span>
+                  </p>
+                ) : sub?.billing ? (
+                  <p className="text-sm font-semibold text-[#0B2440] mt-2 tabular-nums">
+                    Next charge ${Number(sub.billing.amountDue).toFixed(2)}
+                    <span className="font-medium text-[#5B6B7C]"> · 1 month</span>
+                  </p>
+                ) : null}
               </div>
               <span
                 className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
@@ -215,7 +233,13 @@ export const AffiliateSubscriptionView: React.FC<
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#173B72] hover:bg-[#12345F] rounded-xl disabled:opacity-60"
                 >
                   <CreditCard className="w-4 h-4" />
-                  {paying ? 'Processing…' : 'Pay with PayPal'}
+                  {paying
+                    ? 'Processing…'
+                    : sub?.billing?.kind === 'initial'
+                      ? `Pay $${Number(sub.billing.amountDue).toFixed(2)} for 3 months`
+                      : sub?.billing
+                        ? `Pay $${Number(sub.billing.amountDue).toFixed(2)} for 1 month`
+                        : 'Pay with PayPal'}
                 </button>
               )}
               {sub?.hasAccess && (
@@ -226,7 +250,9 @@ export const AffiliateSubscriptionView: React.FC<
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#0B2440] bg-white border border-[#E2E8F0] hover:bg-[#F5F8FB] rounded-xl disabled:opacity-60"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  Renew early
+                  {sub?.billing
+                    ? `Add 1 month · $${Number(sub.billing.amountDue).toFixed(2)}`
+                    : 'Renew early'}
                 </button>
               )}
               {sub?.hasAccess && sub.status !== 'cancelled' && (

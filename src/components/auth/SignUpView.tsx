@@ -108,7 +108,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
             Partner signup
           </h2>
           <p className="mt-1 text-sm text-[#5B6B7C]">
-            Create your account, then pay your monthly plan via PayPal.
+            Create your account, then pay 3 months upfront (10% off) via PayPal.
           </p>
         </div>
 
@@ -145,8 +145,13 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
                         <span className="text-sm font-semibold text-[#0B2440]">
                           {plan.name}
                         </span>
-                        <span className="text-sm font-semibold tabular-nums text-[#0B2440]">
-                          ${plan.price.toFixed(2)}/mo
+                        <span className="flex items-baseline gap-1.5 tabular-nums">
+                          <span className="text-xs text-[#98A2B3] line-through">
+                            ${(plan.price * 3).toFixed(2)}
+                          </span>
+                          <span className="text-sm font-semibold text-[#0B2440]">
+                            ${(plan.price * 3 * 0.9).toFixed(2)}
+                          </span>
                         </span>
                       </div>
                     </button>
@@ -167,13 +172,20 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
               <p className="text-sm text-[#5B6B7C] mt-1">
                 {selectedPlan.description || 'Monthly partner access'}
               </p>
-              <p className="mt-2 text-lg font-semibold text-[#0B2440] tabular-nums">
-                ${selectedPlan.price.toFixed(2)}
-                <span className="text-sm font-medium text-[#6B7C8F]"> / month</span>
+              <p className="mt-3 flex items-baseline gap-2 tabular-nums">
+                <span className="text-lg text-[#98A2B3] line-through">
+                  ${(selectedPlan.price * 3).toFixed(2)}
+                </span>
+                <span className="text-2xl font-semibold text-[#0B2440]">
+                  ${(selectedPlan.price * 3 * 0.9).toFixed(2)}
+                </span>
+              </p>
+              <p className="mt-1 text-sm text-[#5B6B7C]">
+                ${selectedPlan.price.toFixed(2)} / month · 3 months, 10% off
               </p>
               <p className="mt-2 text-[11px] text-[#5B6B7C] flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#3A8F36]" />
-                Payments are processed securely through PayPal. Manual renew each month — no auto-charge.
+                First payment covers 3 months. After that, renew one month at a time. No auto-charge.
               </p>
             </div>
           )}
@@ -277,7 +289,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
               onChange={(e) => setAgreed(e.target.checked)}
               className="mt-0.5"
             />
-            I agree to the partner terms and understand billing is monthly via PayPal.
+            I agree to the partner terms. The first payment is 3 months upfront with 10% off, then one month at a time via PayPal.
           </label>
 
           <button
