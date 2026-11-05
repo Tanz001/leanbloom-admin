@@ -171,6 +171,51 @@ export const authApi = {
     );
   },
 
+  requestSignupOtp(payload: {
+    clinicName: string;
+    ownerName: string;
+    email: string;
+    phone?: string;
+    password: string;
+    planId?: string;
+  }) {
+    return request<{ message: string }>('/api/auth/signup/request-otp', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  verifySignupOtp(email: string, code: string) {
+    return request<LoginResponse>('/api/auth/signup/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
+  },
+
+  requestPasswordOtp(email: string) {
+    return request<{ message: string }>('/api/auth/forgot-password/request-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyPasswordOtp(email: string, code: string) {
+    return request<{ message: string; resetToken: string }>(
+      '/api/auth/forgot-password/verify-otp',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      }
+    );
+  },
+
+  resetPassword(resetToken: string, newPassword: string) {
+    return request<{ message: string }>('/api/auth/forgot-password/reset', {
+      method: 'POST',
+      body: JSON.stringify({ resetToken, newPassword }),
+    });
+  },
+
   signupAffiliate(payload: {
     clinicName: string;
     ownerName: string;

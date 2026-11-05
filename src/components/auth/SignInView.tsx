@@ -23,6 +23,11 @@ export const SignInView: React.FC<SignInViewProps> = ({
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'email' | 'otp' | 'reset'>('login');
+  const [otp, setOtp] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [info, setInfo] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +46,56 @@ export const SignInView: React.FC<SignInViewProps> = ({
       onSignInSuccess(user, result.token);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to sign in');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    setIsLoading(true);
+    try {
+      const result = await authApi.requestPasswordOtp(email.trim());
+      setInfo(result.message);
+      setMode('otp');
+      setOtp('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send the code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await authApi.verifyPasswordOtp(email.trim(), otp.trim());
+      setResetToken(result.resetToken);
+      setMode('reset');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'That code is not valid');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await authApi.resetPassword(resetToken, newPassword);
+      setInfo(result.message);
+      setMode('login');
+      setPassword('');
+      setNewPassword('');
+      setOtp('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update password');
     } finally {
       setIsLoading(false);
     }
@@ -123,13 +178,113 @@ export const SignInView: React.FC<SignInViewProps> = ({
               </span>
             </div>
             <h2 className="font-display text-2xl sm:text-[1.85rem] font-semibold tracking-tight text-[#12345F]">
-              Sign in to continue
+              {mode === 'login'
+                ? 'Sign in to continue'
+                : mode === 'reset'
+                  ? 'Choose a new password'
+                  : 'Reset your password'}
             </h2>
             <p className="mt-2 text-sm text-[#5B6B7C]">
-              Enter your credentials to access LeanBloom.
+              {mode === 'login'
+                ? 'Enter your credentials to access LeanBloom.'
+                : mode === 'otp'
+                  ? `Enter the 6-digit code sent to ${email.trim()}.`
+                  : mode === 'reset'
+                    ? 'Your code is verified. Set a new password.'
+                    : 'We will email a 6-digit code if this address has an account.'}
             </p>
           </div>
 
+          {info && (
+            <div className="mb-4 rounded-xl border border-[#C9DFF0] bg-[#EAF4FB] px-3.5 py-2.5 text-sm text-[#12345F]">
+              {info}
+            </div>
+          )}
+
+          {mode === 'email' && (
+            <form className="space-y-5" onSubmit={sendResetCode}>
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@clinic.com"
+                className="block w-full px-3.5 py-3 text-sm border border-[#DCE3EC] rounded-xl"
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white bg-lb-gradient disabled:opacity-70"
+              >
+                {isLoading ? 'Sending…' : 'Send code'}
+              </button>
+              <button type="button" onClick={() => setMode('login')} className="w-full text-sm font-semibold text-[#2D82C4]">
+                Back to sign in
+              </button>
+            </form>
+          )}
+
+          {mode === 'otp' && (
+            <form className="space-y-5" onSubmit={verifyResetCode}>
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              <input
+                required
+                inputMode="numeric"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="block w-full px-3.5 py-3 text-center tracking-[0.4em] text-lg font-semibold border border-[#DCE3EC] rounded-xl"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || otp.length !== 6}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white bg-lb-gradient disabled:opacity-70"
+              >
+                {isLoading ? 'Checking…' : 'Verify code'}
+              </button>
+              <button type="button" onClick={() => setMode('email')} className="w-full text-sm font-semibold text-[#2D82C4]">
+                Resend from email step
+              </button>
+            </form>
+          )}
+
+          {mode === 'reset' && (
+            <form className="space-y-5" onSubmit={saveNewPassword}>
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password (8+ characters)"
+                className="block w-full px-3.5 py-3 text-sm border border-[#DCE3EC] rounded-xl"
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white bg-lb-gradient disabled:opacity-70"
+              >
+                {isLoading ? 'Saving…' : 'Update password'}
+              </button>
+            </form>
+          )}
+
+          {mode === 'login' && (
           <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             {error && (
               <div
@@ -203,15 +358,28 @@ export const SignInView: React.FC<SignInViewProps> = ({
               </div>
             </div>
 
-            <label className="flex items-center gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-[#4FAF4A] focus:ring-[#4FAF4A]"
-              />
-              <span className="text-sm text-[#5B6B7C]">Keep me signed in</span>
-            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-[#4FAF4A] focus:ring-[#4FAF4A]"
+                />
+                <span className="text-sm text-[#5B6B7C]">Keep me signed in</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('email');
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-sm font-semibold text-[#2D82C4] hover:text-[#12345F]"
+              >
+                Forgot password?
+              </button>
+            </div>
 
             <button
               type="submit"
@@ -228,6 +396,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
               )}
             </button>
           </form>
+          )}
 
           <p className="mt-8 text-center text-sm text-[#5B6B7C]">
             New affiliate partner?{' '}

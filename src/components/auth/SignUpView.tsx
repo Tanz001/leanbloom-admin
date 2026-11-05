@@ -39,6 +39,8 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [otp, setOtp] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -78,7 +80,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
     }
     setIsLoading(true);
     try {
-      const result = await authApi.signupAffiliate({
+      await authApi.requestSignupOtp({
         clinicName: formData.clinicName.trim(),
         ownerName: formData.ownerName.trim(),
         email: formData.email.trim(),
@@ -86,11 +88,26 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
         password: formData.password,
         planId: selectedPlan.id,
       });
+      setStep('otp');
+      setOtp('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send the code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await authApi.verifySignupOtp(formData.email.trim(), otp.trim());
       const user = mapApiUserToAppRole(result.user);
       saveAuthSession(result.token, user);
       onSignUpSuccess(user, result.token);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      setError(err instanceof Error ? err.message : 'Verification failed');
     } finally {
       setIsLoading(false);
     }
@@ -108,10 +125,57 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
             Partner signup
           </h2>
           <p className="mt-1 text-sm text-[#5B6B7C]">
-            Create your account, then pay 3 months upfront (10% off) via PayPal.
+            {step === 'otp'
+              ? `Enter the 6-digit code sent to ${formData.email.trim()}.`
+              : 'We email a code to confirm your address, then you pay 3 months upfront (10% off).'}
           </p>
         </div>
 
+        {step === 'otp' ? (
+          <form
+            onSubmit={handleVerify}
+            className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 space-y-4"
+          >
+            {error && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-[#12345F] mb-1">
+                Verification code
+              </label>
+              <input
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="w-full px-3 py-3 text-center tracking-[0.4em] text-lg font-semibold border border-[#DCE3EC] rounded-xl"
+                placeholder="000000"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading || otp.length !== 6}
+              className="w-full py-3 text-sm font-semibold text-white bg-lb-gradient rounded-xl inline-flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {isLoading ? 'Verifying…' : 'Verify and create account'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStep('details');
+                setError(null);
+              }}
+              className="w-full text-xs font-semibold text-[#2D82C4]"
+            >
+              Edit details
+            </button>
+          </form>
+        ) : (
         <form
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 space-y-4"
@@ -297,7 +361,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
             disabled={isLoading}
             className="w-full py-3 text-sm font-semibold text-white bg-lb-gradient rounded-xl inline-flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {isLoading ? 'Creating account…' : 'Create account & continue to pay'}
+            {isLoading ? 'Sending code…' : 'Email me a verification code'}
             <ArrowRight className="w-4 h-4" />
           </button>
 
@@ -312,6 +376,7 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
             </button>
           </p>
         </form>
+        )}
       </div>
     </div>
   );
