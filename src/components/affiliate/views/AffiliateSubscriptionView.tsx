@@ -223,6 +223,9 @@ export const AffiliateSubscriptionView: React.FC<
               Payments are handled securely through PayPal
               {mock ? ' (mock mode for local testing)' : ''}.
             </p>
+            <p className="text-xs font-semibold text-[#B54708]">
+              Payments are non-refundable.
+            </p>
 
             <div className="flex flex-wrap gap-2 pt-1">
               {!sub?.hasAccess && (

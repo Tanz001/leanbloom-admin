@@ -247,6 +247,9 @@ export const SignUpView: React.FC<SignUpViewProps> = ({
               <p className="mt-1 text-sm text-[#5B6B7C]">
                 ${selectedPlan.price.toFixed(2)} / month · 3 months, 10% off
               </p>
+              <p className="mt-2 text-xs font-semibold text-[#B54708]">
+                Payments are non-refundable.
+              </p>
               <p className="mt-2 text-[11px] text-[#5B6B7C] flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#3A8F36]" />
                 First payment covers 3 months. After that, renew one month at a time. No auto-charge.
