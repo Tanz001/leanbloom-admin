@@ -6,6 +6,7 @@ import {
 } from '../../../lib/api';
 import { useToast } from '../../ui/Toast';
 import { PageHeader } from '../../common/PageHeader';
+import { ModalShell, modalBtnSecondary } from '../../modals/ModalShell';
 
 interface AffiliateSubscriptionViewProps {
   locked?: boolean;
@@ -29,6 +30,8 @@ export const AffiliateSubscriptionView: React.FC<
   const [mock, setMock] = useState(false);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const onAccessGrantedRef = useRef(onAccessGranted);
   const captureStartedRef = useRef(false);
 
@@ -119,20 +122,17 @@ export const AffiliateSubscriptionView: React.FC<
     }
   };
 
-  const cancel = async () => {
-    if (
-      !window.confirm(
-        'Cancel your subscription? You keep access until the current period ends, then the portal locks until you renew.'
-      )
-    ) {
-      return;
-    }
+  const confirmCancel = async () => {
+    setCancelling(true);
     try {
       const res = await affiliateApi.cancelSubscription();
       setSub(res.subscription);
+      setCancelOpen(false);
       toast.success('Subscription cancelled');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Cancel failed');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -255,10 +255,12 @@ export const AffiliateSubscriptionView: React.FC<
                     : 'Renew early'}
                 </button>
               )}
-              {sub?.hasAccess && sub.status !== 'cancelled' && (
+              {sub?.hasAccess &&
+                sub.status !== 'cancelled' &&
+                !sub.cancelledAt && (
                 <button
                   type="button"
-                  onClick={cancel}
+                  onClick={() => setCancelOpen(true)}
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B91C1C] hover:bg-red-50 rounded-xl"
                 >
                   <Ban className="w-4 h-4" />
@@ -269,6 +271,48 @@ export const AffiliateSubscriptionView: React.FC<
           </>
         )}
       </div>
+
+      <ModalShell
+        isOpen={cancelOpen}
+        onClose={() => {
+          if (!cancelling) setCancelOpen(false);
+        }}
+        title="Cancel subscription?"
+        description="You keep access until the current period ends. After that, the portal locks until you renew."
+        icon={<Ban className="w-5 h-5" />}
+        headerTone="warning"
+        maxWidth="md"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setCancelOpen(false)}
+              disabled={cancelling}
+              className={modalBtnSecondary}
+            >
+              Keep subscription
+            </button>
+            <button
+              type="button"
+              onClick={confirmCancel}
+              disabled={cancelling}
+              className="px-4 py-2.5 text-sm font-semibold text-white bg-[#B42318] hover:bg-[#912018] rounded-xl disabled:opacity-60"
+            >
+              {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+            </button>
+          </>
+        }
+      >
+        <div className="px-6 py-5">
+          <p className="text-sm text-[#5B6B7C]">
+            Access through{' '}
+            <span className="font-semibold text-[#12345F]">
+              {formatDate(sub?.endsAt)}
+            </span>
+            . No further monthly charges are started from here.
+          </p>
+        </div>
+      </ModalShell>
     </div>
   );
 };
