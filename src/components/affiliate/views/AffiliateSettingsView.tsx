@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  User,
-  Building2,
-  CreditCard,
-  Bell,
-  Shield,
-  Save,
-  CheckCircle2,
-  Lock,
-  AlertCircle,
-} from 'lucide-react';
+import { Save, CheckCircle2, Lock } from 'lucide-react';
 import { AffiliateProfile } from '../../../types';
 import {
   authApi,
@@ -26,38 +16,20 @@ interface AffiliateSettingsViewProps {
 }
 
 export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
-  affiliateProfile,
   accountUser,
   onUpdateProfile,
   onAccountUpdated,
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    'profile' | 'business' | 'payout' | 'notifications' | 'security'
-  >('profile');
-
-  // Account profile (backed by /api/auth/me)
   const [accountName, setAccountName] = useState(accountUser.name);
   const [phone, setPhone] = useState(affiliateProfile.phone);
-  const [website, setWebsite] = useState(affiliateProfile.website);
-
-  // Business form state (local for now)
-  const [businessName, setBusinessName] = useState(affiliateProfile.businessName);
-  const [businessEmail, setBusinessEmail] = useState(affiliateProfile.businessEmail);
-  const [businessPhone, setBusinessPhone] = useState(affiliateProfile.businessPhone);
-  const [businessAddress, setBusinessAddress] = useState(affiliateProfile.businessAddress);
-
-  const [notifications, setNotifications] = useState({
-    ...affiliateProfile.notificationPreferences,
-  });
-
-  const [twoFactor, setTwoFactor] = useState(affiliateProfile.twoFactorEnabled);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Hidden for now: business, payout, notifications, and extra security options.
 
   useEffect(() => {
     setAccountName(accountUser.name);
@@ -70,43 +42,29 @@ export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
     setSaving(true);
 
     try {
-      if (activeTab === 'profile') {
-        const trimmed = accountName.trim();
-        if (trimmed.length < 2) {
-          throw new Error('Display name must be at least 2 characters');
+      const trimmed = accountName.trim();
+      if (trimmed.length < 2) {
+        throw new Error('Display name must be at least 2 characters');
+      }
+      const result = await authApi.updateProfile(trimmed);
+      const mapped = mapApiUserToAppRole(result.user);
+      saveAuthSession(result.token, mapped);
+      onAccountUpdated(mapped);
+      onUpdateProfile({ phone });
+
+      const changingPassword =
+        currentPassword || newPassword || confirmPassword;
+      if (changingPassword) {
+        if (newPassword.length < 8) {
+          throw new Error('New password must be at least 8 characters');
         }
-        const result = await authApi.updateProfile(trimmed);
-        const mapped = mapApiUserToAppRole(result.user);
-        saveAuthSession(result.token, mapped);
-        onAccountUpdated(mapped);
-        onUpdateProfile({ phone, website });
-      } else if (activeTab === 'security') {
-        if (!currentPassword && !newPassword && !confirmPassword) {
-          onUpdateProfile({ twoFactorEnabled: twoFactor });
-        } else {
-          if (newPassword.length < 8) {
-            throw new Error('New password must be at least 8 characters');
-          }
-          if (newPassword !== confirmPassword) {
-            throw new Error('New password and confirmation do not match');
-          }
-          await authApi.changePassword(currentPassword, newPassword);
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-          onUpdateProfile({ twoFactorEnabled: twoFactor });
+        if (newPassword !== confirmPassword) {
+          throw new Error('New password and confirmation do not match');
         }
-      } else {
-        onUpdateProfile({
-          phone,
-          website,
-          businessName,
-          businessEmail,
-          businessPhone,
-          businessAddress,
-          notificationPreferences: notifications,
-          twoFactorEnabled: twoFactor,
-        });
+        await authApi.changePassword(currentPassword, newPassword);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
       }
 
       setSaveSuccess(true);
@@ -118,29 +76,21 @@ export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
     }
   };
 
-  const saveLabel =
-    activeTab === 'security'
-      ? 'Update security'
-      : activeTab === 'profile'
-        ? 'Save profile'
-        : 'Save Preferences';
-
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <div>
         <h1 className="text-2xl font-bold text-[#172033] tracking-tight">
-          Affiliate Settings
+          Settings
         </h1>
         <p className="text-xs text-[#667085] mt-1">
-          Manage your account profile, white-label clinic details, banking
-          payouts, and security.
+          Update your name, phone, and password.
         </p>
       </div>
 
       {saveSuccess && (
-        <div className="p-4 bg-[#EAF5EA] text-[#4A9B52] border border-[#4A9B52]/30 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+        <div className="p-4 bg-[#EAF5EA] text-[#4A9B52] border border-[#4A9B52]/30 rounded-2xl text-xs font-semibold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Settings successfully saved and synchronized.</span>
+          <span>Profile saved.</span>
         </div>
       )}
 
@@ -150,466 +100,116 @@ export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
         </div>
       )}
 
-      <div className="flex items-center gap-1.5 p-1 bg-white rounded-2xl border border-[#E5E7EB] shadow-2xs overflow-x-auto">
-        {(
-          [
-            { id: 'profile', label: 'Profile', icon: User },
-            { id: 'business', label: 'Business Information', icon: Building2 },
-            { id: 'payout', label: 'Payout Information', icon: CreditCard },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'security', label: 'Security', icon: Shield },
-          ] as const
-        ).map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => {
-                setActiveTab(tab.id);
-                setSaveError(null);
-              }}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-[#174A87] text-white shadow-xs'
-                  : 'text-[#667085] hover:text-[#172033] hover:bg-[#F7F9FC]'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
       <form
         onSubmit={handleSave}
         className="bg-white rounded-2xl border border-[#E5E7EB] shadow-2xs overflow-hidden"
       >
-        {activeTab === 'profile' && (
-          <div className="p-6 space-y-6">
-            <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">
-                Partner Account Profile
-              </h3>
-              <p className="text-xs text-[#667085]">
-                Update your login display name. Email changes are not available
-                yet.
-              </p>
+        <div className="p-6 space-y-6">
+          <div className="border-b border-[#E5E7EB] pb-4">
+            <h3 className="text-sm font-bold text-[#172033]">Profile</h3>
+            <p className="text-xs text-[#667085]">
+              Your login name and contact phone. Email cannot be changed here.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#172033] mb-1">
+                Display name
+              </label>
+              <input
+                type="text"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
+                autoComplete="name"
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Display name
-                </label>
-                <input
-                  type="text"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                  autoComplete="name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Account email
-                </label>
-                <input
-                  type="email"
-                  value={accountUser.email}
-                  readOnly
-                  disabled
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] cursor-not-allowed"
-                />
-                <p className="mt-1 text-[11px] text-[#9CA3AF]">
-                  Email cannot be changed here yet.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Clinic / entity name
-                </label>
-                <input
-                  type="text"
-                  value={affiliateProfile.name}
-                  readOnly
-                  disabled
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Telephone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Storefront Domain / Custom Host
-                </label>
-                <input
-                  type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#172033] mb-1">
+                Account email
+              </label>
+              <input
+                type="email"
+                value={accountUser.email}
+                readOnly
+                disabled
+                className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] cursor-not-allowed"
+              />
             </div>
 
-            <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] text-xs text-[#667085] flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-[#172033] block">
-                  Contracted Commission Rate
-                </span>
-                <span>
-                  Calculated on every patient checkout via LeanBloom white-label
-                  system
-                </span>
-              </div>
-              <span className="text-base font-black text-[#174A87] bg-white px-3 py-1.5 rounded-lg border border-[#E5E7EB]">
-                {affiliateProfile.commissionRate}% Gross Sales
-              </span>
+            <div>
+              <label className="block text-xs font-semibold text-[#172033] mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
+              />
             </div>
           </div>
-        )}
 
-        {activeTab === 'business' && (
-          <div className="p-6 space-y-6">
-            <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">
-                Legal Business Entity
-              </h3>
-              <p className="text-xs text-[#667085]">
-                Corporate identity for IRS 1099 tax compliance and legal
-                agreements
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3 pt-1">
+            <h4 className="text-xs font-bold text-[#172033] uppercase tracking-wider flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              Change password
+            </h4>
+            <p className="text-[11px] text-[#667085]">
+              Leave these blank if you only want to update your name or phone.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Registered Corporate Entity Name
+                  Current password
                 </label>
                 <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
                   className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Business Billing Email
+                  New password
                 </label>
                 <input
-                  type="email"
-                  value={businessEmail}
-                  onChange={(e) => setBusinessEmail(e.target.value)}
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimum 8 characters"
+                  autoComplete="new-password"
                   className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Corporate Phone
+                  Confirm new password
                 </label>
                 <input
-                  type="tel"
-                  value={businessPhone}
-                  onChange={(e) => setBusinessPhone(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Jurisdiction / Country
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={affiliateProfile.country}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085]"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Headquarters Physical Street Address
-                </label>
-                <input
-                  type="text"
-                  value={businessAddress}
-                  onChange={(e) => setBusinessAddress(e.target.value)}
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
                 />
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {activeTab === 'payout' && (
-          <div className="p-6 space-y-6">
-            <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">
-                Payout & Banking Information
-              </h3>
-              <p className="text-xs text-[#667085]">
-                Masked banking coordinates used for bi-monthly automated ACH
-                commission disbursements
-              </p>
-            </div>
-
-            <div className="p-4 bg-[#EAF5EA]/50 rounded-2xl border border-[#4A9B52]/30 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white text-[#4A9B52] flex items-center justify-center border border-[#4A9B52]/20">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#172033]">
-                    Active Method: {affiliateProfile.payoutMethod}
-                  </h4>
-                  <p className="text-[11px] text-[#667085]">
-                    {affiliateProfile.bankName} • Account ending in{' '}
-                    {affiliateProfile.accountNumberMasked}
-                  </p>
-                </div>
-              </div>
-              <span className="px-2.5 py-1 text-[11px] font-bold text-[#4A9B52] bg-white rounded-lg border border-[#4A9B52]/20">
-                Verified Active
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Depository Bank Institution
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={affiliateProfile.bankName}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Account Beneficiary Name
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={affiliateProfile.accountHolderName}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  ACH Routing Number
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={affiliateProfile.routingNumberMasked}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#172033] mb-1">
-                  Checking Account Number
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={affiliateProfile.accountNumberMasked}
-                  className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl bg-[#F7F9FC] text-[#667085] font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
-              <span>
-                To modify banking coordinates or swap to international
-                wire/PayPal, contact your LeanBloom Partner Support Manager for
-                identity verification and anti-fraud approval.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'notifications' && (
-          <div className="p-6 space-y-6">
-            <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">
-                Notification Preferences
-              </h3>
-              <p className="text-xs text-[#667085]">
-                Configure real-time alerts and automated weekly reporting emails
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                {
-                  key: 'newOrders',
-                  title: 'New Patient Order Alerts',
-                  desc: 'Instant email alert whenever a referred patient purchases a prescription or wellness pack',
-                },
-                {
-                  key: 'commissions',
-                  title: 'Commission Ledger Updates',
-                  desc: 'Notification when commissions are approved following clinical provider intake clearance',
-                },
-                {
-                  key: 'payments',
-                  title: 'Disbursement & Payout Receipts',
-                  desc: 'Email confirmation when bi-monthly ACH funds are transmitted to your depository account',
-                },
-                {
-                  key: 'weeklySummary',
-                  title: 'Weekly Performance Digest',
-                  desc: 'Summary report of referral traffic, top converting products, and weekly gross revenue',
-                },
-                {
-                  key: 'marketing',
-                  title: 'LeanBloom Platform Updates & SKUs',
-                  desc: 'Announcements regarding new compounding formulas, peptides, and wholesale price drops',
-                },
-              ].map((item) => (
-                <div
-                  key={item.key}
-                  className="flex items-center justify-between p-3.5 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB]"
-                >
-                  <div className="pr-4">
-                    <h4 className="text-xs font-bold text-[#172033]">
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-[#667085]">{item.desc}</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={
-                        notifications[
-                          item.key as keyof typeof affiliateProfile.notificationPreferences
-                        ]
-                      }
-                      onChange={(e) =>
-                        setNotifications({
-                          ...notifications,
-                          [item.key]: e.target.checked,
-                        })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4A9B52]"></div>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'security' && (
-          <div className="p-6 space-y-6">
-            <div className="border-b border-[#E5E7EB] pb-4">
-              <h3 className="text-sm font-bold text-[#172033]">Security</h3>
-              <p className="text-xs text-[#667085]">
-                Update your dashboard password and review recent sign-in activity
-              </p>
-            </div>
-
-            <div className="space-y-3 pt-1">
-              <h4 className="text-xs font-bold text-[#172033] uppercase tracking-wider flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5" />
-                Change password
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-[#172033] mb-1">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#172033] mb-1">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 8 characters"
-                    autoComplete="new-password"
-                    className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#172033] mb-1">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat new password"
-                    autoComplete="new-password"
-                    className="w-full px-3.5 py-2 text-xs border border-[#E5E7EB] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#174A87]/20 focus:border-[#174A87]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] text-xs space-y-1">
-              <span className="font-bold text-[#172033] block">
-                Active Session Telemetry
-              </span>
-              <p className="text-[#667085]">
-                Current Session IP:{' '}
-                <strong>{affiliateProfile.lastLoginIp || '—'}</strong>
-              </p>
-              <p className="text-[#667085]">
-                Last Login:{' '}
-                <strong>{affiliateProfile.lastLoginTime || '—'}</strong>
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="px-6 py-4 bg-[#F7F9FC] border-t border-[#E5E7EB] flex items-center justify-between">
-          <span className="text-xs text-[#667085]">
-            Changes are isolated to your affiliate account: {affiliateProfile.id}
-          </span>
+        <div className="px-6 py-4 bg-[#F7F9FC] border-t border-[#E5E7EB] flex items-center justify-end">
           <button
             type="submit"
             disabled={saving}
             className="px-5 py-2 text-xs font-bold text-white bg-[#174A87] hover:bg-[#123B70] rounded-xl shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-60"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>{saving ? 'Saving…' : saveLabel}</span>
+            <span>{saving ? 'Saving…' : 'Save profile'}</span>
           </button>
         </div>
       </form>
