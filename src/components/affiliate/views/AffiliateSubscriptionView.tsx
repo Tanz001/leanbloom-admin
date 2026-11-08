@@ -215,6 +215,11 @@ export const AffiliateSubscriptionView: React.FC<
                 <p className="font-semibold text-[#0B2440] mt-1">
                   {formatDate(sub?.lastPaymentAt)}
                 </p>
+                {sub?.lastPaymentAmount != null && (
+                  <p className="text-xs text-[#5B6B7C] mt-0.5 tabular-nums">
+                    ${Number(sub.lastPaymentAmount).toFixed(2)} charged
+                  </p>
+                )}
               </div>
             </div>
 

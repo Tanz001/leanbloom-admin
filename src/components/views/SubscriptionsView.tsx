@@ -50,7 +50,7 @@ export const SubscriptionsView: React.FC = () => {
     const pending = rows.filter((r) => r.status === 'pending_payment').length;
     const expired = rows.filter((r) => r.status === 'expired').length;
     const totalAmount = activeRows.reduce(
-      (sum, r) => sum + (Number(r.planPrice) || 0),
+      (sum, r) => sum + (Number(r.lastPaymentAmount) || 0),
       0
     );
     return {
@@ -99,7 +99,7 @@ export const SubscriptionsView: React.FC = () => {
           icon={<Ban className="w-4 h-4" />}
         />
         <StatCard
-          label="Monthly amount"
+          label="Total paid"
           value={
             loading
               ? '—'
@@ -108,7 +108,7 @@ export const SubscriptionsView: React.FC = () => {
                   maximumFractionDigits: 2,
                 })}`
           }
-          change="Sum of active plan prices"
+          change="Sum of latest charges on active plans"
           isPositive
           accent="blue"
           icon={<DollarSign className="w-4 h-4" />}
@@ -139,7 +139,7 @@ export const SubscriptionsView: React.FC = () => {
                 <tr className="text-[11px] uppercase tracking-wide text-[#8A96A6] border-b border-[#EEF2F6] bg-[#FAFBFC]">
                   <th className="px-5 py-3 font-semibold">Affiliate</th>
                   <th className="px-5 py-3 font-semibold">Plan</th>
-                  <th className="px-5 py-3 font-semibold">Price</th>
+                  <th className="px-5 py-3 font-semibold">Paid</th>
                   <th className="px-5 py-3 font-semibold">Status</th>
                   <th className="px-5 py-3 font-semibold">Starts</th>
                   <th className="px-5 py-3 font-semibold">Ends</th>
@@ -159,7 +159,18 @@ export const SubscriptionsView: React.FC = () => {
                     </td>
                     <td className="px-5 py-4 text-[#0F1C2E]">{r.planName}</td>
                     <td className="px-5 py-4 font-semibold tabular-nums">
-                      ${r.planPrice.toFixed(2)}
+                      {r.lastPaymentAmount != null ? (
+                        <>
+                          <p>${Number(r.lastPaymentAmount).toFixed(2)}</p>
+                          <p className="text-[12px] font-medium text-[#6B7C8F]">
+                            ${r.planPrice.toFixed(2)} / mo
+                          </p>
+                        </>
+                      ) : (
+                        <span className="font-medium text-[#6B7C8F]">
+                          ${r.planPrice.toFixed(2)} / mo
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <StatusBadge

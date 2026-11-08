@@ -264,6 +264,7 @@ export type AffiliateSubscriptionRow = {
   endsAt: string | null;
   cancelledAt: string | null;
   lastPaymentAt: string | null;
+  lastPaymentAmount: number | null;
   hasAccess: boolean;
   daysRemaining: number | null;
   billing?: BillingQuote;
