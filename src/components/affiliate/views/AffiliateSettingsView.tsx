@@ -16,6 +16,7 @@ interface AffiliateSettingsViewProps {
 }
 
 export const AffiliateSettingsView: React.FC<AffiliateSettingsViewProps> = ({
+  affiliateProfile,
   accountUser,
   onUpdateProfile,
   onAccountUpdated,
