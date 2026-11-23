@@ -29,34 +29,12 @@ interface AffiliateProductsViewProps {
   onRefresh?: () => Promise<void>;
 }
 
-function buildProductShareLink(baseUrl: string, productId: string): string {
-  const trimmed = baseUrl.trim().replace(/\/+$/, '');
-  const withProtocol = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-  try {
-    const url = new URL(withProtocol);
-    url.searchParams.set('product', productId);
-    return url.toString();
-  } catch {
-    return `${withProtocol}?product=${encodeURIComponent(productId)}`;
-  }
-}
-
-function serviceCopyLink(
-  product: AffiliatePortalProduct,
-  storefrontBaseUrl: string
-): string {
-  if (product.buyUrl?.trim()) return product.buyUrl.trim();
-  if (storefrontBaseUrl) {
-    return buildProductShareLink(storefrontBaseUrl, product.id);
-  }
-  return '';
+function serviceCopyLink(product: AffiliatePortalProduct): string {
+  return product.buyUrl?.trim() || '';
 }
 
 export const AffiliateProductsView: React.FC<AffiliateProductsViewProps> = ({
   products,
-  storefrontBaseUrl = '',
   onRefresh,
 }) => {
   const toast = useToast();
@@ -117,7 +95,7 @@ export const AffiliateProductsView: React.FC<AffiliateProductsViewProps> = ({
     <div className="space-y-6 pb-12">
       <PageHeader
         title="Services"
-        description="MyDose care services by category. Copy a service link or the general catalog link for customers."
+        description="MyDose care services by category. Each row shows the buy link set by admin — copy it for customers."
         actions={
           onRefresh ? (
             <button
@@ -215,13 +193,13 @@ export const AffiliateProductsView: React.FC<AffiliateProductsViewProps> = ({
                 <th className="py-3 px-4">Duration</th>
                 <th className="py-3 px-4 text-right">Price</th>
                 <th className="py-3 px-4">Stock</th>
-                <th className="py-3 px-4 min-w-[16rem]">Copy link</th>
+                <th className="py-3 px-4 min-w-[16rem]">Buy link</th>
                 <th className="py-3 px-4 text-center">Copy</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F2F4F7] text-sm text-[#344054]">
               {filtered.map((p) => {
-                const shareLink = serviceCopyLink(p, storefrontBaseUrl);
+                const shareLink = serviceCopyLink(p);
                 const care = serviceCategoryOf(p);
                 return (
                   <tr key={p.id} className="hover:bg-[#F8F9FC]">
@@ -252,7 +230,7 @@ export const AffiliateProductsView: React.FC<AffiliateProductsViewProps> = ({
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-xs text-[#5B6B7C]">
-                      {p.duration || '—'}
+                      {p.duration?.trim() ? p.duration : '—'}
                     </td>
                     <td className="py-3.5 px-4 text-right font-mono font-bold text-[#12345F]">
                       ${p.basePrice.toFixed(2)}
@@ -274,14 +252,14 @@ export const AffiliateProductsView: React.FC<AffiliateProductsViewProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-1.5 rounded-lg text-[#2D82C4] hover:bg-[#EAF4FB]"
-                            title="Open link"
+                            title="Open buy link"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         </div>
                       ) : (
                         <span className="text-xs text-[#98A2B3]">
-                          No link saved
+                          No buy link set
                         </span>
                       )}
                     </td>

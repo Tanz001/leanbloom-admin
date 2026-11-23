@@ -36,6 +36,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
   const [basePrice, setBasePrice] = useState(199);
   const [minimumPrice, setMinimumPrice] = useState(249);
   const [description, setDescription] = useState('');
+  const [duration, setDuration] = useState('');
+  const [medication, setMedication] = useState('');
   const [buyUrl, setBuyUrl] = useState('');
   const [stockStatus, setStockStatus] =
     useState<Product['stockStatus']>('In Stock');
@@ -61,6 +63,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     setBasePrice(199);
     setMinimumPrice(249);
     setDescription('');
+    setDuration('');
+    setMedication('');
     setBuyUrl('');
     setStockStatus('In Stock');
     setStatus('Active');
@@ -89,6 +93,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
           basePrice: Number(basePrice),
           minimumPrice: Number(minimumPrice),
           description,
+          duration: duration.trim() || null,
+          medication: medication.trim() || null,
           buyUrl: buyUrl.trim() || null,
           stockStatus,
           status,
@@ -108,8 +114,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
-      title="Add product"
-      description="Set wholesale base and minimum retail for the catalog."
+      title="Add service"
+      description="Set wholesale base, duration, and MyDose buy link for affiliates."
       icon={<Package className="w-5 h-5" />}
       maxWidth="lg"
     >
@@ -239,27 +245,55 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
         </div>
 
         <div>
-          <label className={modalLabelClass}>Description</label>
-          <textarea
-            rows={3}
+          <label className={modalLabelClass}>
+            Care category (Weight Loss, Sleep, …)
+          </label>
+          <input
+            type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Short clinical or catalog description…"
-            className={`${modalInputClass} resize-none`}
+            placeholder="e.g. Weight Loss"
+            className={modalInputClass}
           />
+          <p className={modalHintClass}>
+            Shown as the service category filter on admin and affiliate Services.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={modalLabelClass}>Duration</label>
+            <input
+              type="text"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="e.g. Ongoing, 13 weeks"
+              className={modalInputClass}
+            />
+          </div>
+          <div>
+            <label className={modalLabelClass}>Medication</label>
+            <input
+              type="text"
+              value={medication}
+              onChange={(e) => setMedication(e.target.value)}
+              placeholder="e.g. Mots-C · Injectable"
+              className={modalInputClass}
+            />
+          </div>
         </div>
 
         <div>
-          <label className={modalLabelClass}>Buy / checkout link</label>
+          <label className={modalLabelClass}>Buy / copy link (MyDose)</label>
           <input
             type="url"
             value={buyUrl}
             onChange={(e) => setBuyUrl(e.target.value)}
-            placeholder="https://… (opens from storefront Get started)"
+            placeholder="https://app.mydose.ai/…"
             className={modalInputClass}
           />
           <p className={modalHintClass}>
-            When patients click Buy on the storefront product page, this URL opens.
+            Affiliates copy this link from their Services page for each product.
           </p>
         </div>
 

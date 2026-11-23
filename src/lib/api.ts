@@ -392,6 +392,8 @@ export type CreateProductPayload = {
   name: string;
   category: ApiProduct['category'];
   description?: string;
+  duration?: string | null;
+  medication?: string | null;
   buyUrl?: string | null;
   basePrice: number;
   minimumPrice: number;
@@ -575,6 +577,12 @@ export const adminApi = {
     form.append('category', payload.category);
     if (payload.description != null) {
       form.append('description', payload.description);
+    }
+    if (payload.duration != null) {
+      form.append('duration', payload.duration);
+    }
+    if (payload.medication != null) {
+      form.append('medication', payload.medication);
     }
     if (payload.buyUrl != null) {
       form.append('buyUrl', payload.buyUrl);
