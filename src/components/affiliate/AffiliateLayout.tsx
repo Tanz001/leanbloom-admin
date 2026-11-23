@@ -47,7 +47,7 @@ export const AffiliateLayout: React.FC<AffiliateLayoutProps> = ({
     { route: 'dashboard' as AffiliateRoute, label: 'Dashboard', icon: LayoutDashboard },
     { route: 'patients' as AffiliateRoute, label: 'Customers', icon: Users },
     { route: 'orders' as AffiliateRoute, label: 'Orders', icon: ShoppingBag },
-    { route: 'products' as AffiliateRoute, label: 'Products', icon: Package },
+    { route: 'products' as AffiliateRoute, label: 'Services', icon: Package },
     { route: 'branding' as AffiliateRoute, label: 'Branding', icon: Palette },
     { route: 'subscription' as AffiliateRoute, label: 'Subscription', icon: CreditCard },
   ];

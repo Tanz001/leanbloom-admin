@@ -323,6 +323,8 @@ export type ApiProduct = {
     | 'Prescription Refill'
     | 'Wellness Pack';
   description: string;
+  duration?: string | null;
+  medication?: string | null;
   imageUrl?: string | null;
   buyUrl?: string | null;
   basePrice: number;
@@ -695,7 +697,12 @@ export const adminApi = {
     email: string;
     phone?: string;
     activeProgram?: string;
-    status?: 'Active' | 'Pending Intake' | 'Inactive';
+    status?:
+      | 'Awaiting Intake'
+      | 'Active'
+      | 'Paused'
+      | 'Declined by Provider'
+      | 'Shipped';
   }) {
     return request<{ message: string; patient: unknown }>(
       '/api/admin/patients',
@@ -712,7 +719,12 @@ export const adminApi = {
       email?: string;
       phone?: string | null;
       activeProgram?: string | null;
-      status?: 'Active' | 'Pending Intake' | 'Inactive';
+      status?:
+        | 'Awaiting Intake'
+        | 'Active'
+        | 'Paused'
+        | 'Declined by Provider'
+        | 'Shipped';
     }
   ) {
     return request<{ message: string; patient: unknown }>(
@@ -802,7 +814,10 @@ export type AffiliatePortalProduct = {
   name: string;
   category: string;
   description: string;
+  duration?: string | null;
+  medication?: string | null;
   imageUrl?: string | null;
+  buyUrl?: string | null;
   basePrice: number;
   minimumPrice: number;
   stockStatus: string;

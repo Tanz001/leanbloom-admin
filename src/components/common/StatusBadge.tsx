@@ -21,7 +21,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     normalized === 'completed' ||
     normalized === 'paid' ||
     normalized === 'in stock' ||
-    normalized === 'delivered'
+    normalized === 'delivered' ||
+    normalized === 'shipped'
   ) {
     styles = 'bg-[#EAF6E7] text-[#2E9B4B] ring-1 ring-[#6DBE45]/40';
     dotColor = 'bg-[#2E9B4B]';
@@ -29,6 +30,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     normalized === 'pending' ||
     normalized === 'processing' ||
     normalized === 'pending intake' ||
+    normalized === 'awaiting intake' ||
+    normalized === 'paused' ||
     normalized === 'pending lab' ||
     normalized === 'compounding' ||
     normalized === 'in transit' ||
@@ -41,7 +44,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     normalized === 'suspended' ||
     normalized === 'cancelled' ||
     normalized === 'failed' ||
-    normalized === 'critical'
+    normalized === 'critical' ||
+    normalized === 'declined by provider'
   ) {
     styles = 'bg-[#FEF3F2] text-[#B42318] ring-1 ring-[#F04438]/40';
     dotColor = 'bg-[#D64545]';

@@ -403,7 +403,7 @@ export const AffiliateDashboardView: React.FC<AffiliateDashboardViewProps> = ({
                 <div className="flex justify-between text-[#172033] mb-1 font-semibold">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                    Pending Intake Clearance
+                    Pending commissions
                   </span>
                   <span>${pendingCommissions.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>

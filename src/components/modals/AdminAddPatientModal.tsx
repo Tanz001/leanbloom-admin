@@ -17,7 +17,12 @@ export type AddPatientPayload = {
   email: string;
   phone?: string;
   activeProgram?: string;
-  status: 'Active' | 'Pending Intake' | 'Inactive';
+  status:
+    | 'Awaiting Intake'
+    | 'Active'
+    | 'Paused'
+    | 'Declined by Provider'
+    | 'Shipped';
 };
 
 interface AdminAddPatientModalProps {
@@ -44,7 +49,7 @@ export const AdminAddPatientModal: React.FC<AdminAddPatientModalProps> = ({
   const [phone, setPhone] = useState('');
   const [activeProgram, setActiveProgram] = useState('');
   const [status, setStatus] =
-    useState<AddPatientPayload['status']>('Pending Intake');
+    useState<AddPatientPayload['status']>('Awaiting Intake');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -63,7 +68,7 @@ export const AdminAddPatientModal: React.FC<AdminAddPatientModalProps> = ({
       setEmail('');
       setPhone('');
       setActiveProgram('');
-      setStatus('Pending Intake');
+      setStatus('Awaiting Intake');
     }
     setError('');
     setBusy(false);
@@ -271,9 +276,11 @@ export const AdminAddPatientModal: React.FC<AdminAddPatientModalProps> = ({
                   setStatus(e.target.value as AddPatientPayload['status'])
                 }
               >
-                <option value="Pending Intake">Pending Intake</option>
+                <option value="Awaiting Intake">Awaiting Intake</option>
                 <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Paused">Paused</option>
+                <option value="Declined by Provider">Declined by Provider</option>
+                <option value="Shipped">Shipped</option>
               </ModalSelect>
             </div>
           </div>

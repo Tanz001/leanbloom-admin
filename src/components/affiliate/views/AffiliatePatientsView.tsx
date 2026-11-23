@@ -139,9 +139,11 @@ export const AffiliatePatientsView: React.FC<AffiliatePatientsViewProps> = ({
               className="text-xs border border-[#E5E7EB] rounded-xl px-3 py-2 bg-[#F7F9FC] focus:outline-hidden focus:border-[#174A87]"
             >
               <option value="All">All Statuses</option>
+              <option value="Awaiting Intake">Awaiting Intake</option>
               <option value="Active">Active</option>
-              <option value="Pending">Pending Intake</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Paused">Paused</option>
+              <option value="Declined by Provider">Declined by Provider</option>
+              <option value="Shipped">Shipped</option>
             </select>
           </div>
 
@@ -246,11 +248,14 @@ export const AffiliatePatientsView: React.FC<AffiliatePatientsViewProps> = ({
                     <td className="px-3 py-3.5 text-center">
                       <span
                         className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
-                          patient.status === 'Active'
+                          patient.status === 'Active' || patient.status === 'Shipped'
                             ? 'bg-[#EAF5EA] text-[#4A9B52]'
-                            : patient.status === 'Pending'
-                            ? 'bg-amber-50 text-amber-700'
-                            : 'bg-gray-100 text-gray-600'
+                            : patient.status === 'Awaiting Intake' ||
+                                patient.status === 'Paused'
+                              ? 'bg-amber-50 text-amber-700'
+                              : patient.status === 'Declined by Provider'
+                                ? 'bg-[#FEF3F2] text-[#B42318]'
+                                : 'bg-gray-100 text-gray-600'
                         }`}
                       >
                         {patient.status}

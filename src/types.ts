@@ -98,7 +98,12 @@ export interface Patient {
   affiliateName: string;
   ordersCount: number;
   totalSpent: number;
-  status: 'Active' | 'Pending Intake' | 'Inactive';
+  status:
+    | 'Awaiting Intake'
+    | 'Active'
+    | 'Paused'
+    | 'Declined by Provider'
+    | 'Shipped';
   lastActivity: string;
   joinedDate: string;
   activeProgram: string;
@@ -133,8 +138,11 @@ export interface Product {
   ordersCount: number;
   status: 'Active' | 'Draft' | 'Archived';
   description: string;
+  /** MyDose care category when seeded (Weight Loss, Sleep, …) */
+  duration?: string | null;
+  medication?: string | null;
   imageUrl?: string | null;
-  /** External buy / checkout URL opened from storefront product detail */
+  /** External buy / checkout URL — MyDose copy link for affiliates */
   buyUrl?: string | null;
   stockStatus: 'In Stock' | 'Compounding' | 'Backorder';
 }
@@ -286,7 +294,13 @@ export interface AffiliatePatientItem {
   joinedDate: string;
   ordersCount: number;
   totalSpent: number;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status:
+    | 'Awaiting Intake'
+    | 'Active'
+    | 'Paused'
+    | 'Declined by Provider'
+    | 'Shipped'
+    | string;
   plan: string;
   address: string;
   notes?: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Package,
   DollarSign,
@@ -14,6 +14,7 @@ import { StatusBadge } from '../common/StatusBadge';
 import { PageHeader } from '../common/PageHeader';
 import { RowActionsMenu } from '../common/RowActionsMenu';
 import { mediaUrl } from '../../lib/api';
+import { serviceCategoryOf } from '../../lib/serviceCategory';
 
 interface ProductsPricingViewProps {
   mode: 'products' | 'pricing';
@@ -39,14 +40,26 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
   const [activeTab, setActiveTab] = useState<'catalog' | 'pricing'>(
     mode === 'pricing' ? 'pricing' : 'catalog'
   );
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) set.add(serviceCategoryOf(p));
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (categoryFilter === 'All') return products;
+    return products.filter((p) => serviceCategoryOf(p) === categoryFilter);
+  }, [products, categoryFilter]);
 
   return (
     <div className="space-y-6 pb-12" id="products-pricing-container">
       <PageHeader
-        title={activeTab === 'catalog' ? 'Products' : 'Pricing'}
+        title={activeTab === 'catalog' ? 'Services' : 'Pricing'}
         description={
           activeTab === 'catalog'
-            ? 'LeanBloom catalog available to affiliates.'
+            ? 'LeanBloom MyDose services available to affiliates.'
             : 'Wholesale floors and live affiliate selling prices.'
         }
         actions={
@@ -82,7 +95,7 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
               className="px-3.5 py-2 text-xs font-semibold text-white bg-[#0F1C2E] hover:bg-[#1A2F4A] rounded-xl transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              Add Product
+              Add Service
             </button>
           </>
         }
@@ -105,13 +118,31 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
       </div>
 
       {activeTab === 'catalog' && (
+        <>
+          <div className="flex flex-wrap gap-1.5">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
+                  categoryFilter === cat
+                    ? 'bg-[#174A87] text-white border-[#174A87]'
+                    : 'bg-white text-[#5B6B7C] border-[#E4E7EC] hover:border-[#174A87]/40 hover:text-[#174A87]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         <div className="bg-white rounded-xl border border-[#E4E7EC] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-[#E4E7EC] text-[11px] font-bold text-[#667085] uppercase tracking-wider bg-[#F8F9FC]">
-                  <th className="py-3 px-4">Product Formulation / Protocol</th>
+                  <th className="py-3 px-4">Service / Protocol</th>
                   <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Duration</th>
                   <th className="py-3 px-4 text-right">Wholesale Base</th>
                   <th className="py-3 px-4 text-right">Minimum Allowed Price</th>
                   <th className="py-3 px-4 text-right">Active Affiliates</th>
@@ -122,7 +153,7 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
-                {products.map((prod) => (
+                {filteredProducts.map((prod) => (
                   <tr
                     key={prod.id}
                     className="hover:bg-[#F8F9FC] transition-colors"
@@ -143,15 +174,18 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                         <div>
                           <p className="font-bold text-[#172033]">{prod.name}</p>
                           <p className="text-[11px] text-[#667085] line-clamp-1 max-w-sm">
-                            {prod.description}
+                            {prod.medication || '—'}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-[11px] font-medium bg-[#F2F4F7] text-[#344054] px-2 py-0.5 rounded-full">
-                        {prod.category}
+                      <span className="text-[11px] font-medium bg-[#EAF4FB] text-[#174A87] px-2 py-0.5 rounded-full">
+                        {serviceCategoryOf(prod)}
                       </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-[#5B6B7C]">
+                      {prod.duration || '—'}
                     </td>
                     <td className="py-3.5 px-4 text-right font-mono font-bold text-[#172033]">
                       ${prod.basePrice}
@@ -175,7 +209,7 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
                       <RowActionsMenu
                         items={[
                           {
-                            label: 'Edit product',
+                            label: 'Edit service',
                             icon: <Edit2 className="w-4 h-4" />,
                             onClick: () => onOpenEditProduct(prod),
                           },
@@ -207,6 +241,7 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
             </table>
           </div>
         </div>
+        </>
       )}
 
       {activeTab === 'pricing' && (
@@ -214,10 +249,10 @@ export const ProductsPricingView: React.FC<ProductsPricingViewProps> = ({
           {pricingRules.length === 0 ? (
             <div className="bg-white rounded-xl border border-[#E4E7EC] px-6 py-12 text-center">
               <p className="text-sm font-semibold text-[#172033]">
-                No products in the catalog yet
+                No services in the catalog yet
               </p>
               <p className="mt-1 text-xs text-[#667085]">
-                Add a product to manage wholesale floors and view affiliate prices.
+                Add a service to manage wholesale floors and view affiliate prices.
               </p>
             </div>
           ) : (

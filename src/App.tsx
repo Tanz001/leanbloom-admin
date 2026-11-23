@@ -928,7 +928,12 @@ export default function App() {
     email: string;
     phone?: string;
     activeProgram?: string;
-    status: 'Active' | 'Pending Intake' | 'Inactive';
+    status:
+      | 'Awaiting Intake'
+      | 'Active'
+      | 'Paused'
+      | 'Declined by Provider'
+      | 'Shipped';
   }) => {
     const { patient } = await adminApi.createPatient(payload);
     setPatients((prev) => [patient as Patient, ...prev]);
@@ -943,7 +948,12 @@ export default function App() {
       email: string;
       phone?: string;
       activeProgram?: string;
-      status: 'Active' | 'Pending Intake' | 'Inactive';
+      status:
+      | 'Awaiting Intake'
+      | 'Active'
+      | 'Paused'
+      | 'Declined by Provider'
+      | 'Shipped';
     }
   ) => {
     const { patient } = await adminApi.updatePatient(id, payload);

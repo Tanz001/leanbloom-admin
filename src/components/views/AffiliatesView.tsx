@@ -60,7 +60,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Pending' | 'Inactive' | 'Suspended'>('All');
   const [detailTab, setDetailTab] = useState<
-    'Overview' | 'Customers' | 'Orders' | 'Products' | 'Commissions' | 'Branding' | 'Settings'
+    'Overview' | 'Customers' | 'Orders' | 'Services' | 'Commissions' | 'Branding' | 'Settings'
   >('Overview');
 
   // Filter affiliates
@@ -145,7 +145,7 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
         {/* Tab Navigation */}
         <div className="flex border-b border-[#E4E7EC] bg-white px-4 rounded-xl shadow-xs overflow-x-auto gap-2">
           {(
-            ['Overview', 'Customers', 'Orders', 'Products', 'Commissions', 'Branding', 'Settings'] as const
+            ['Overview', 'Customers', 'Orders', 'Services', 'Commissions', 'Branding', 'Settings'] as const
           ).map((tab) => (
             <button
               key={tab}
@@ -360,8 +360,8 @@ export const AffiliatesView: React.FC<AffiliatesViewProps> = ({
           </div>
         )}
 
-        {/* Tab 4: Products Assigned to this affiliate */}
-        {detailTab === 'Products' && (
+        {/* Tab 4: Services assigned to this affiliate */}
+        {detailTab === 'Services' && (
           <div className="bg-white rounded-xl border border-[#E4E7EC] p-5 shadow-xs space-y-3">
             <h3 className="text-sm font-bold text-[#172033]">
               Active Catalog & Retail Pricing Rules

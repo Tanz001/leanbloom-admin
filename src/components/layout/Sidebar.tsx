@@ -91,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'products',
-          label: 'Products',
+          label: 'Services',
           icon: <Package className="w-[18px] h-[18px]" strokeWidth={1.75} />,
         },
       ],

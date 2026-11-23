@@ -106,9 +106,11 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
             className="px-2.5 py-1.5 text-xs font-medium bg-[#F7F9FC] border border-[#E4E7EC] rounded-lg text-[#344054]"
           >
             <option value="All">All Statuses</option>
+            <option value="Awaiting Intake">Awaiting Intake</option>
             <option value="Active">Active</option>
-            <option value="Pending Intake">Pending Intake</option>
-            <option value="Inactive">Inactive</option>
+            <option value="Paused">Paused</option>
+            <option value="Declined by Provider">Declined by Provider</option>
+            <option value="Shipped">Shipped</option>
           </select>
         </div>
       </div>
